@@ -1,19 +1,39 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="rtl" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>مدیریت کارهای روزمره</title>
+    <title>مدیریت هوشمند کارها | Argon Edition</title>
     
-    <!-- تنظیمات PWA برای تبدیل به وب‌اپلیکیشن مستقل -->
+    <!-- تنظیمات PWA -->
     <meta name="theme-color" content="#4f46e5">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="کارهای من">
+    <meta name="apple-mobile-web-app-title" content="Argon Todo">
 
-    <!-- بارگذاری Tailwind CSS و Chart.js و فونت فارسی -->
+    <!-- بارگذاری Tailwind CSS، Chart.js و فونت وزیرمتن + اینتر -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        argon: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#1e1b4b',
+                            950: '#0f0d26'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
 
@@ -30,234 +50,326 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        /* پس‌زمینه زنده و گرادیان جذاب */
+        /* پس‌زمینه دینامیک آرگون با گوی‌های نوری */
         body {
-            background: radial-gradient(circle at 10% 20%, #1e1b4b 0%, #0f172a 50%, #090d16 100%);
+            background: radial-gradient(circle at 15% 15%, #312e81 0%, #0f172a 45%, #020617 100%);
             min-height: 100vh;
+            overflow-x: hidden;
         }
-        /* انیمیشن پالس ملایم */
+        .ambient-orb-1 {
+            position: fixed;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.28) 0%, rgba(99, 102, 241, 0) 70%);
+            top: -80px;
+            right: -80px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .ambient-orb-2 {
+            position: fixed;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, rgba(236, 72, 153, 0) 70%);
+            bottom: -60px;
+            left: -60px;
+            pointer-events: none;
+            z-index: 0;
+        }
         @keyframes subtleFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-3px); }
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
         }
         .animate-float {
-            animation: subtleFloat 3s ease-in-out infinite;
+            animation: subtleFloat 3.5s ease-in-out infinite;
         }
-        /* افکت شیشه‌ای مدرن */
-        .glass-header {
-            background: linear-gradient(135deg, rgba(79, 70, 229, 0.95), rgba(99, 102, 241, 0.88));
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+        /* هدر آرگون گرادیانی */
+        .argon-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 55%, #7c3aed 100%);
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(8px);
+        .dark .argon-header {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #3b0764 100%);
         }
-        /* چک‌باکس سفارشی انیمیشنی */
-        .task-checkbox:checked + .checkbox-face {
-            background-color: #4f46e5;
-            border-color: #4f46e5;
+        /* کارت‌های تسک در حالت روشن و تاریک */
+        .task-card {
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .task-checkbox:checked + .checkbox-face svg {
-            display: block;
+        .task-card:hover {
+            transform: translateY(-1px);
+        }
+        /* حلقه پیشرفت SVG */
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.5s ease-in-out;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-0 sm:p-5 selection:bg-indigo-500 selection:text-white">
+<body class="min-h-screen flex items-center justify-center p-0 sm:p-4 selection:bg-indigo-500 selection:text-white relative">
 
-    <!-- کانتینر اصلی برنامه با ظاهر گوشی هوشمند / کارت مدرن با نور محیطی -->
-    <div class="w-full max-w-md bg-slate-50/95 sm:rounded-[36px] shadow-[0_25px_60px_-15px_rgba(30,27,75,0.65)] overflow-hidden min-h-screen sm:min-h-[740px] sm:max-h-[92vh] flex flex-col relative border border-white/20 ring-1 ring-slate-800/10">
+    <!-- گوی‌های نوری پس‌زمینه -->
+    <div class="ambient-orb-1"></div>
+    <div class="ambient-orb-2"></div>
 
-        <!-- هدر گرادیانی لوکس با نور پردازی لطیف -->
-        <header class="glass-header text-white p-4 shadow-lg sticky top-0 z-30 transition-all border-b border-indigo-400/20">
-            <div class="flex items-center justify-between gap-3">
-                <div class="flex items-center gap-3">
-                    <!-- آواتار یا تصویر پروفایل کاربر به جای آیکون اپلیکیشن -->
-                    <button id="user-avatar-btn" title="حساب کاربری / User Profile" class="relative group cursor-pointer focus:outline-none">
-                        <img id="header-user-avatar" src="https://placehold.co/100x100/4f46e5/white?text=U" alt="User Profile" class="w-10 h-10 rounded-2xl object-cover ring-2 ring-white/30 shadow-md transition group-active:scale-95 group-hover:ring-white/60">
-                        <span id="sync-status-dot" class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-indigo-900 shadow-[0_0_8px_rgba(52,211,153,0.9)] transition-all"></span>
+    <!-- شاسی اصلی اپلیکیشن (پشتیبانی کامل از حالت شب و روز) -->
+    <div class="w-full max-w-[440px] bg-slate-50/95 dark:bg-slate-900/95 sm:rounded-[38px] shadow-[0_28px_70px_-15px_rgba(0,0,0,0.65)] overflow-hidden min-h-screen sm:min-h-[780px] sm:max-h-[94vh] flex flex-col relative border border-white/25 dark:border-slate-700/60 backdrop-blur-2xl z-10 transition-colors duration-300">
+
+        <!-- هدر لوکس Argon همراه با داشبورد زنده پیشرفت -->
+        <header class="argon-header text-white pt-4 pb-3.5 px-4 shadow-lg sticky top-0 z-30 border-b border-white/15">
+            <!-- ردیف بالای هدر: پروفایل، عنوان، دکمه‌های کنترل -->
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-3 min-w-0">
+                    <!-- آواتار کاربر همراه با نشانگر وضعیت اتصال -->
+                    <button id="user-avatar-btn" title="حساب کاربری / User Profile" class="relative group cursor-pointer focus:outline-none shrink-0">
+                        <img id="header-user-avatar" src="https://placehold.co/100x100/4f46e5/white?text=U" alt="User Profile" class="w-11 h-11 rounded-2xl object-cover ring-2 ring-white/40 shadow-lg transition duration-200 group-active:scale-95 group-hover:ring-white">
+                        <span id="sync-status-dot" class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 ring-2 ring-indigo-900 shadow-[0_0_10px_rgba(52,211,153,1)] transition-all"></span>
                     </button>
-                    <div>
-                        <h1 class="text-base sm:text-lg font-black tracking-tight flex items-center gap-2 drop-shadow-sm">
-                            <span id="app-title-text" data-i18n="appTitle">کارهای روزمره من</span>
-                        </h1>
-                        <!-- متن وضعیت همگام‌سازی که پس از چند ثانیه نرم محو می‌شود -->
-                        <div class="flex items-center gap-1.5 mt-0.5 text-[11px] text-indigo-100 font-medium">
-                            <span id="sync-status-text" class="truncate max-w-[150px] transition-all duration-500 opacity-100" data-i18n="syncOnline">همگام با سرور</span>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-1.5">
+                            <h1 class="text-base font-black tracking-tight truncate drop-shadow-sm" id="app-title-text" data-i18n="appTitle">کارهای روزمره من</h1>
+                            <span class="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-white/20 text-white backdrop-blur-md">Argon</span>
+                        </div>
+                        <div class="flex items-center gap-2 mt-0.5 text-[11px] text-indigo-100/90 font-medium h-4">
+                            <span id="today-date-label" class="opacity-90 font-semibold"></span>
+                            <span id="sync-status-text" class="truncate max-w-[130px] bg-black/20 px-2 py-0.2 rounded-full text-[10px] transition-all duration-500 opacity-100" data-i18n="syncOnline">همگام با سرور</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-1.5">
-                    <!-- دکمه تغییر زبان با استایل کپسولی شیشه‌ای -->
-                    <button id="lang-toggle-btn" title="تغییر زبان / Switch Language" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition active:scale-95 text-xs font-black tracking-wider border border-white/15 backdrop-blur-md shadow-sm">
+                <!-- اکشن‌های سریع هدر -->
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <!-- دکمه تغییر تم تاریک/روشن -->
+                    <button id="theme-toggle-btn" title="تغییر تم / Toggle Theme" class="p-2 rounded-xl bg-white/15 hover:bg-white/25 text-white transition active:scale-90 border border-white/15 backdrop-blur-md shadow-sm">
+                        <span id="theme-icon" class="text-xs block leading-none">🌙</span>
+                    </button>
+
+                    <!-- دکمه تغییر زبان -->
+                    <button id="lang-toggle-btn" title="Switch Language" class="px-2.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white transition active:scale-90 text-[11px] font-black tracking-wider border border-white/15 backdrop-blur-md shadow-sm">
                         EN
                     </button>
 
-                    <!-- دکمه باز و بسته کردن سرچ مدرن -->
-                    <button id="search-toggle-btn" title="جستجو" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition active:scale-95 border border-white/15 backdrop-blur-md shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <!-- دکمه باز و بسته کردن جستجو -->
+                    <button id="search-toggle-btn" title="Search" class="p-2 rounded-xl bg-white/15 hover:bg-white/25 text-white transition active:scale-90 border border-white/15 backdrop-blur-md shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </button>
 
-                    <!-- دکمه منوی اکشن‌ها (گزارشات، اعلان، اتصال) -->
+                    <!-- منوی ۳ نقطه هدر -->
                     <div class="relative">
-                        <button id="header-menu-btn" title="گزینه‌ها" class="p-2 rounded-xl bg-white/15 hover:bg-white/25 text-white transition active:scale-95 border border-white/20 backdrop-blur-md shadow-sm flex items-center justify-center">
+                        <button id="header-menu-btn" title="More Options" class="p-2 rounded-xl bg-white/15 hover:bg-white/25 text-white transition active:scale-90 border border-white/15 backdrop-blur-md shadow-sm flex items-center justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
                         </button>
 
-                        <!-- دراپ‌داون شیشه‌ای با موقعیت هوشمند برای زبان‌های مختلف -->
-                        <div id="header-menu-dropdown" class="hidden absolute start-0 mt-2 w-48 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 py-1.5 z-40 text-slate-700 animate-in fade-in zoom-in-95 duration-150">
-                            <button id="open-reports-btn" class="w-full px-3.5 py-2 text-start text-xs font-semibold hover:bg-indigo-50 flex items-center gap-2.5 transition">
-                                <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">📊</span>
+                        <!-- دراپ‌داون منوی هدر با موقعیت هوشمند دو زبانه -->
+                        <div id="header-menu-dropdown" class="hidden absolute end-0 mt-2 w-52 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 py-1.5 z-50 text-slate-700 dark:text-slate-200">
+                            <button id="open-reports-btn" class="w-full px-3.5 py-2.5 text-start text-xs font-bold hover:bg-indigo-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition">
+                                <span class="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-xs">📊</span>
                                 <span data-i18n="reportBtn">گزارش و نمودارها</span>
                             </button>
-                            <button id="notify-perm-btn" class="w-full px-3.5 py-2 text-start text-xs font-semibold hover:bg-indigo-50 flex items-center gap-2.5 transition">
-                                <span class="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-xs">🔔</span>
+                            <button id="notify-perm-btn" class="w-full px-3.5 py-2.5 text-start text-xs font-bold hover:bg-indigo-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition">
+                                <span class="w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 flex items-center justify-center text-xs">🔔</span>
                                 <span data-i18n="notifyBtn">اعلان یادآوری</span>
                             </button>
-                            <div class="my-1 border-t border-slate-100"></div>
-                            <button id="auth-action-btn" class="w-full px-3.5 py-2 text-start text-xs font-bold text-indigo-600 hover:bg-indigo-50 flex items-center gap-2.5 transition">
-                                <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs">👤</span>
-                                <span id="auth-btn-label" data-i18n="loginBtn">ورود و سینک</span>
+                            <div class="my-1 border-t border-slate-100 dark:border-slate-700"></div>
+                            <button id="auth-action-btn" class="w-full px-3.5 py-2.5 text-start text-xs font-black text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition">
+                                <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs">☁️</span>
+                                <span id="auth-btn-label" data-i18n="loginBtn">ورود و سینک ابری</span>
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- نوار جستجو با انیمیشن کشویی و تم شیشه‌ای -->
+            <!-- نوار خلاصه وضعیت Bento (حلقه پیشرفت + آمار سریع روزانه) -->
+            <div class="mt-3 pt-2.5 border-t border-white/15 flex items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-2.5">
+                    <div class="relative w-9 h-9 flex items-center justify-center shrink-0">
+                        <svg class="w-9 h-9" viewBox="0 0 36 36">
+                            <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3.2"></circle>
+                            <circle id="header-progress-circle" class="progress-ring-circle" cx="18" cy="18" r="15" fill="none" stroke="#34d399" stroke-width="3.2" stroke-dasharray="94.2" stroke-dashoffset="94.2" stroke-linecap="round"></circle>
+                        </svg>
+                        <span id="header-progress-text" class="absolute text-[9px] font-black font-mono">0%</span>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-extrabold text-white/95" data-i18n="dailyProgressTitle">پیشرفت کارهای فعال</p>
+                        <p id="header-stats-sub" class="text-[10px] text-indigo-100/80 font-medium">0 از 0 تکمیل شده</p>
+                    </div>
+                </div>
+
+                <!-- دکمه سریع مدیریت برچسب‌ها در هدر Bento -->
+                <button id="open-tags-manager-btn" class="bg-white/15 hover:bg-white/25 border border-white/20 text-white px-3 py-1.5 rounded-xl text-[11px] font-black shrink-0 transition active:scale-95 flex items-center gap-1.5 backdrop-blur-md shadow-sm">
+                    <span>🏷️</span>
+                    <span data-i18n="tagsManagerBtn">برچسب‌ها</span>
+                    <span id="total-tags-badge" class="bg-black/25 px-1.5 py-0.2 rounded-md text-[10px] font-mono">0</span>
+                </button>
+            </div>
+
+            <!-- کادر جستجوی کشویی -->
             <div id="search-container" class="hidden mt-3 transition-all">
                 <div class="relative">
                     <input 
                         type="text" 
                         id="search-input" 
-                        placeholder="جستجو در تسک‌ها یا برچسب‌ها (#)..." 
+                        placeholder="جستجو در عنوان یا برچسب‌ها (#)..." 
                         data-i18n-ph="searchPlaceholder"
-                        class="w-full bg-indigo-900/40 text-white placeholder-indigo-200/80 text-xs px-3.5 py-2.5 pr-9 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/40 border border-white/20 backdrop-blur-md shadow-inner transition"
+                        class="w-full bg-black/25 text-white placeholder-indigo-200/80 text-xs px-3.5 py-2.5 pe-9 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/50 border border-white/20 backdrop-blur-md shadow-inner transition"
                     >
-                    <svg class="w-4 h-4 text-indigo-200 absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <button id="clear-search-btn" class="hidden absolute end-2.5 top-1/2 -translate-y-1/2 text-indigo-200 hover:text-white text-xs font-bold px-1">✕</button>
                 </div>
             </div>
         </header>
 
-        <!-- نوار تایمر پومودورو مدرن با گرادیان نئونی -->
-        <div id="pomodoro-bar" class="hidden bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white px-3.5 py-2.5 shadow-xl flex items-center justify-between z-20 border-b border-indigo-500/20 text-xs backdrop-blur-md">
+        <!-- نوار تایمر پومودورو شناور -->
+        <div id="pomodoro-bar" class="hidden bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-900 text-white px-3.5 py-2.5 shadow-xl flex items-center justify-between z-20 border-b border-indigo-500/30 text-xs">
             <div class="flex items-center gap-2 min-w-0 flex-1">
-                <span class="relative flex h-3 w-3 shrink-0">
+                <span class="relative flex h-2.5 w-2.5 shrink-0">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.8)]"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
                 </span>
                 <span class="font-extrabold text-rose-400 shrink-0" data-i18n="pomoFocus">تمرکز:</span>
-                <span id="pomo-task-name" class="font-bold truncate text-slate-200 text-xs"></span>
+                <span id="pomo-task-name" class="font-bold truncate text-slate-100 text-xs"></span>
             </div>
-            <div class="flex items-center gap-2 shrink-0">
-                <span id="pomo-timer-display" class="font-mono text-xs font-black text-amber-300 bg-black/40 px-2 py-0.5 rounded-lg border border-amber-500/30 tracking-wider shadow-inner">25:00</span>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <span id="pomo-timer-display" class="font-mono text-xs font-black text-amber-300 bg-black/40 px-2 py-0.5 rounded-lg border border-amber-500/30 tracking-wider">25:00</span>
                 <button id="pomo-pause-btn" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 active:scale-95 transition">⏸️</button>
-                <button id="pomo-stop-btn" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 font-extrabold text-white text-[11px] shadow-[0_2px_10px_rgba(225,29,72,0.4)] active:scale-95 transition" data-i18n="pomoFinish">ثبت</button>
+                <button id="pomo-stop-btn" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 font-extrabold text-white text-[11px] shadow-md active:scale-95 transition" data-i18n="pomoFinish">ثبت</button>
             </div>
         </div>
 
-        <!-- پیام توست هوایی با سایه شیشه‌ای دودی -->
-        <div id="toast-msg" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-xl text-white text-xs font-medium px-4 py-2.5 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.35)] z-50 pointer-events-none transition-all duration-300 opacity-0 border border-slate-700/80 flex items-center gap-2"></div>
+        <!-- پیام Toast -->
+        <div id="toast-msg" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-900/95 dark:bg-indigo-950/95 backdrop-blur-xl text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-2xl z-50 pointer-events-none transition-all duration-300 opacity-0 border border-white/15 flex items-center gap-2"></div>
 
-        <!-- نوار ابزار فیلترها و برچسب‌ها با پس‌زمینه تمیز و مرتب -->
-        <div class="bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-3.5 py-2.5 shrink-0 shadow-sm">
-            <!-- تب‌های وضعیت به سبک کپسول‌های شناور مدرن -->
-            <div class="flex items-center justify-between gap-2 mb-2.5">
-                <div class="flex bg-slate-100 p-1 rounded-2xl text-xs flex-1 shadow-inner border border-slate-200/60">
-                    <button class="filter-tab flex-1 py-1.5 text-center font-extrabold rounded-xl text-slate-500 hover:text-slate-800 transition active:scale-95 text-[11px]" data-filter="all" data-i18n="filterAll">همه</button>
-                    <button class="filter-tab flex-1 py-1.5 text-center font-extrabold rounded-xl text-slate-500 hover:text-slate-800 transition active:scale-95 text-[11px]" data-filter="active" data-i18n="filterActive">فعال</button>
-                    <button class="filter-tab flex-1 py-1.5 text-center font-extrabold rounded-xl text-slate-500 hover:text-slate-800 transition active:scale-95 text-[11px]" data-filter="completed" data-i18n="filterDone">انجام‌شده</button>
-                    <button class="filter-tab flex-1 py-1.5 text-center font-extrabold rounded-xl text-slate-500 hover:text-slate-800 transition active:scale-95 text-[11px]" data-filter="archived" data-i18n="filterArchived">آرشیو</button>
+        <!-- نوار فیلتر وضعیت و فیلتر پروژه‌ها (بدون بریده شدن منوی کشویی) -->
+        <div class="bg-white/85 dark:bg-slate-800/85 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-700/70 px-3.5 py-2.5 shrink-0 shadow-xs z-20">
+            <!-- تب‌های ۴ گانه وضعیت -->
+            <div class="flex bg-slate-100 dark:bg-slate-900/90 p-1 rounded-2xl text-xs shadow-inner border border-slate-200/60 dark:border-slate-700/60 mb-2">
+                <button class="filter-tab flex-1 py-1.5 text-center font-extrabold rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition active:scale-95 text-[11px]" data-filter="all" data-i18n="filterAll">همه</button>
+                <button class="filter-tab flex-1 py-1.5 text-center font-extrabold rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition active:scale-95 text-[11px]" data-filter="active" data-i18n="filterActive">فعال</button>
+                <button class="filter-tab flex-1 py-1.5 text-center font-extrabold rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition active:scale-95 text-[11px]" data-filter="completed" data-i18n="filterDone">انجام‌شده</button>
+                <button class="filter-tab flex-1 py-1.5 text-center font-extrabold rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition active:scale-95 text-[11px]" data-filter="archived" data-i18n="filterArchived">آرشیو</button>
+            </div>
+
+            <!-- ردیف فیلتر پروژه‌ها: چیپ‌های پرکاربرد در اسکرول افقی + دکمه پاپ‌آپ بیرون از اسکرول -->
+            <div class="flex items-center gap-1.5 relative">
+                <div id="projects-bar" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 text-xs flex-1 min-w-0">
+                    <!-- توسط JS پر می‌شود -->
                 </div>
-                <!-- دکمه مدیریت برچسب‌ها با بج زیبا -->
-                <button id="open-tags-manager-btn" title="مدیریت کامل برچسب‌ها" class="bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/70 text-indigo-700 px-3 py-1.5 rounded-2xl text-[11px] font-extrabold shrink-0 transition active:scale-95 flex items-center gap-1.5 shadow-sm">
-                    <span class="text-xs">🏷️</span>
-                    <span data-i18n="tagsManagerBtn">برچسب‌ها</span>
-                </button>
+
+                <!-- منوی کشویی سایر پروژه‌ها برای فیلتر بالا (خارج از overflow-x-auto تا بریده نشود) -->
+                <div id="filter-more-projects-wrapper" class="hidden relative shrink-0">
+                    <button type="button" id="filter-more-projects-btn" class="px-2.5 py-1.5 rounded-xl font-extrabold text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 border border-slate-200/80 dark:border-slate-600 flex items-center gap-1 transition active:scale-95 shadow-xs">
+                        <span id="filter-more-projects-label" data-i18n="moreFilterBtn">+ بیشتر</span>
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div id="filter-more-projects-menu" class="hidden absolute end-0 top-full mt-1.5 w-44 max-h-52 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl py-1 z-50 text-xs">
+                        <!-- توسط JS پر می‌شود -->
+                    </div>
+                </div>
             </div>
 
-            <!-- نوار فیلتر افقی پروژه‌ها با چیپ‌های گرد جذاب -->
-            <div id="projects-bar" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 text-xs">
-                <!-- توسط JS پر می‌شود -->
-            </div>
-
-            <!-- فیلتر بازه تاریخ در حالت آرشیو -->
-            <div id="archive-filter-row" class="hidden mt-2 pt-2 border-t border-slate-200/70 flex items-center justify-between gap-2 text-xs">
+            <!-- فیلتر بازه تاریخ ویژه تب آرشیو -->
+            <div id="archive-filter-row" class="hidden mt-2 pt-2 border-t border-slate-200/70 dark:border-slate-700 flex items-center justify-between gap-2 text-xs">
                 <div class="flex items-center gap-1 flex-1">
                     <span class="text-slate-400 text-[10px] font-bold" data-i18n="dateFrom">از:</span>
-                    <input type="date" id="archive-date-from" class="bg-white border border-slate-200 rounded-xl px-2 py-1 text-[10px] w-full shadow-inner focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <input type="date" id="archive-date-from" class="bg-white dark:bg-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-1 text-[10px] w-full focus:outline-none focus:ring-1 focus:ring-indigo-500">
                 </div>
                 <div class="flex items-center gap-1 flex-1">
                     <span class="text-slate-400 text-[10px] font-bold" data-i18n="dateTo">تا:</span>
-                    <input type="date" id="archive-date-to" class="bg-white border border-slate-200 rounded-xl px-2 py-1 text-[10px] w-full shadow-inner focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <input type="date" id="archive-date-to" class="bg-white dark:bg-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-1 text-[10px] w-full focus:outline-none focus:ring-1 focus:ring-indigo-500">
                 </div>
-                <button id="clear-archive-filter-btn" class="text-rose-500 hover:text-rose-700 text-[10px] font-extrabold shrink-0 px-1 py-0.5 rounded-lg hover:bg-rose-50 transition" data-i18n="clearFilter">حذف فیلتر</button>
+                <button id="clear-archive-filter-btn" class="text-rose-500 hover:text-rose-600 text-[10px] font-extrabold shrink-0 px-1.5 py-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition" data-i18n="clearFilter">پاکسازی</button>
             </div>
         </div>
 
-        <!-- بدنه تسک‌ها با اسکرول نرم و ظاهر کارت‌های مجزا -->
-        <main id="tasks-scroll-container" class="flex-1 p-3.5 overflow-y-auto no-scrollbar space-y-2.5 bg-slate-100/60">
+        <!-- لیست اصلی تسک‌ها -->
+        <main id="tasks-scroll-container" class="flex-1 p-3.5 overflow-y-auto no-scrollbar space-y-2.5 bg-slate-100/70 dark:bg-slate-950/60">
             <div id="todo-list" class="space-y-2.5">
-                <!-- آیتم‌های تسک رندر می‌شوند -->
+                <!-- کارت‌های تسک -->
             </div>
 
-            <!-- وضعیت خالی نبود تسک -->
-            <div id="empty-state" class="py-14 flex flex-col items-center justify-center text-slate-400 text-center animate-in fade-in duration-300">
-                <div class="w-16 h-16 rounded-3xl bg-white border border-slate-200/80 shadow-md flex items-center justify-center text-2xl mb-3 animate-float">
-                    🌱
+            <!-- وضعیت خالی بودن لیست -->
+            <div id="empty-state" class="py-12 flex flex-col items-center justify-center text-slate-400 text-center">
+                <div class="w-16 h-16 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-md flex items-center justify-center text-2xl mb-3 animate-float">
+                    ✨
                 </div>
-                <p class="text-xs font-extrabold text-slate-700" data-i18n="emptyTitle">کاری برای نمایش وجود ندارد</p>
-                <p class="text-[11px] text-slate-400 mt-1 max-w-[200px]" data-i18n="emptySub">کار جدیدی بنویسید یا فیلتر را تغییر دهید</p>
+                <p class="text-xs font-extrabold text-slate-700 dark:text-slate-300" data-i18n="emptyTitle">لیست کارهای شما خالی است</p>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1 max-w-[220px]" data-i18n="emptySub">کار جدیدی در پایین بنویسید یا با میکروفون بگویید</p>
             </div>
 
-            <!-- دکمه بارگذاری تنبل -->
+            <!-- دکمه بارگذاری تنبل (Lazy Load) -->
             <div id="load-more-container" class="hidden pt-2 text-center">
-                <button id="load-more-btn" class="bg-white border border-slate-200 hover:bg-indigo-50 hover:border-indigo-200 text-indigo-600 text-xs font-black px-4 py-2 rounded-2xl shadow-sm transition active:scale-95" data-i18n="loadMore">
+                <button id="load-more-btn" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 text-indigo-600 dark:text-indigo-400 text-xs font-black px-4 py-2 rounded-2xl shadow-sm transition active:scale-95" data-i18n="loadMore">
                     نمایش موارد بیشتر...
                 </button>
             </div>
         </main>
 
-        <!-- فوتر ورودی تسک مدرن و بخش کپی‌رایت / ورژن -->
-        <footer class="bg-white/90 backdrop-blur-md border-t border-slate-200/80 p-3 shrink-0 shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.03)]">
-            <!-- نوار برچسب‌های انتخابی فرم -->
-            <div class="mb-2.5">
+        <!-- فوتر هوشمند ثبت تسک + انتخابگر تگ بدون باگ Clipping + انتخابگر اولویت -->
+        <footer class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800 p-3 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.04)] z-30">
+            
+            <!-- بخش انتخاب برچسب‌ها و اولویت برای تسک جدید -->
+            <div class="mb-2">
                 <div class="flex items-center justify-between gap-1 mb-1.5">
-                    <span class="text-[11px] font-extrabold text-slate-600 flex items-center gap-1">
+                    <span class="text-[11px] font-extrabold text-slate-600 dark:text-slate-300 flex items-center gap-1">
                         <span>🏷️</span>
                         <span data-i18n="tagsLabel">برچسب‌ها:</span>
                     </span>
-                    <span id="selected-tags-summary" class="text-[10px] text-slate-400 font-medium truncate max-w-[190px]" data-i18n="noTagSelected">هیچ برچسبی انتخاب نشده</span>
+                    <span id="selected-tags-summary" class="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold truncate max-w-[210px]" data-i18n="noTagSelected">هیچ برچسبی انتخاب نشده</span>
                 </div>
-                <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-                    <div id="quick-tags-container" class="flex items-center gap-1.5"></div>
-                    <select id="other-tags-select" class="text-[11px] bg-slate-100/90 border border-slate-200 text-slate-700 rounded-xl px-2.5 py-1 outline-none font-bold shadow-sm">
-                        <option value="" data-i18n="otherTagsOpt">+ سایر برچسب‌ها...</option>
-                    </select>
+
+                <!-- کانتینر ترکیبی: چیپ‌های قابل اسکرول در یک طرف و دکمه پاپ‌آپ خارج از اسکرول تا منو بریده نشود -->
+                <div class="flex items-center gap-1.5 relative">
+                    <div id="quick-tags-container" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 flex-1 min-w-0">
+                        <!-- چیپ‌های پرکاربرد + چیپ‌های انتخاب‌شده از منوی بیشتر -->
+                    </div>
+                    
+                    <!-- دراپ‌داون سفارشی سایر برچسب‌ها (خارج از overflow-x-auto) -->
+                    <div class="relative shrink-0" id="other-tags-dropdown-wrapper">
+                        <button type="button" id="other-tags-dropdown-trigger" class="text-[11px] bg-indigo-50 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-slate-700 border border-indigo-200/80 dark:border-slate-700 text-indigo-700 dark:text-indigo-300 rounded-xl px-2.5 py-1 font-extrabold shadow-xs flex items-center gap-1 transition active:scale-95">
+                            <span id="other-tags-dropdown-label" data-i18n="otherTagsOpt">+ سایر برچسب‌ها</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                        </button>
+                        
+                        <!-- پاپ‌آپ بازشونده به سمت بالا بدون برش -->
+                        <div id="other-tags-dropdown-menu" class="hidden absolute end-0 bottom-full mb-2 w-48 max-h-52 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl py-1.5 z-50 text-xs">
+                            <!-- توسط JS پر می‌شود -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- فیلدهای تخمین زمان و سررسید با پس‌زمینه لطیف آبی/بنفش -->
-            <div id="time-tracking-fields" class="hidden mb-2.5 p-2.5 bg-gradient-to-r from-indigo-50/90 to-blue-50/90 border border-indigo-100 rounded-2xl flex items-center gap-2.5 text-xs shadow-sm">
+            <!-- فیلدهای زمان‌بندی (فقط وقتی برچسب زمان‌دار انتخاب شود باز می‌شود) -->
+            <div id="time-tracking-fields" class="hidden mb-2.5 p-2.5 bg-indigo-50/80 dark:bg-slate-800/90 border border-indigo-100 dark:border-slate-700 rounded-2xl flex items-center gap-2.5 text-xs">
                 <div class="flex-1">
-                    <label class="block text-[10px] font-extrabold text-indigo-950 mb-0.5" data-i18n="estMinLabel">تخمین زمان (دقیقه):</label>
-                    <input type="number" id="task-est-minutes" placeholder="45" class="w-full bg-white border border-indigo-200 rounded-xl px-2.5 py-1.5 text-xs outline-none font-mono shadow-inner focus:ring-1 focus:ring-indigo-500">
+                    <label class="block text-[10px] font-extrabold text-indigo-950 dark:text-indigo-200 mb-0.5" data-i18n="estMinLabel">تخمین زمان (دقیقه):</label>
+                    <input type="number" id="task-est-minutes" placeholder="45" class="w-full bg-white dark:bg-slate-900 dark:text-white border border-indigo-200 dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs outline-none font-mono focus:ring-1 focus:ring-indigo-500">
                 </div>
                 <div class="flex-1">
-                    <label class="block text-[10px] font-extrabold text-indigo-950 mb-0.5" data-i18n="dueDateLabel">تاریخ سررسید:</label>
-                    <input type="date" id="task-due-date" class="w-full bg-white border border-indigo-200 rounded-xl px-2.5 py-1.5 text-xs outline-none shadow-inner focus:ring-1 focus:ring-indigo-500">
+                    <label class="block text-[10px] font-extrabold text-indigo-950 dark:text-indigo-200 mb-0.5" data-i18n="dueDateLabel">تاریخ سررسید:</label>
+                    <input type="date" id="task-due-date" class="w-full bg-white dark:bg-slate-900 dark:text-white border border-indigo-200 dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs outline-none focus:ring-1 focus:ring-indigo-500">
                 </div>
             </div>
 
-            <!-- فرم ثبت کار و دکمه صوتی -->
+            <!-- فرم ثبت کار جدید + دکمه اولویت + میکروفون -->
             <form id="add-form" class="flex items-center gap-1.5">
+                <!-- دکمه تغییر اولویت تسک (عادی / مهم / فوری) -->
+                <button 
+                    type="button" 
+                    id="priority-cycle-btn" 
+                    title="تغییر اولویت / Priority"
+                    class="px-2.5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-[11px] font-black shrink-0 transition active:scale-90 flex items-center gap-1"
+                >
+                    <span id="priority-dot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                    <span id="priority-label" class="text-slate-600 dark:text-slate-300" data-i18n="prioNormal">عادی</span>
+                </button>
+
                 <input 
                     type="text" 
                     id="task-input" 
                     placeholder="کار جدید را بنویسید یا بگویید..." 
                     data-i18n-ph="taskInputPlaceholder"
-                    class="flex-1 bg-slate-100/90 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition shadow-inner font-medium text-slate-800 placeholder-slate-400"
+                    class="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400"
                     autocomplete="off"
                     required
                 >
@@ -265,88 +377,91 @@
                 <button 
                     type="button" 
                     id="voice-input-btn"
-                    title="گفتن متن با صدا"
-                    class="bg-white hover:bg-slate-50 text-slate-700 active:scale-95 font-bold p-2.5 rounded-2xl border border-slate-200 shadow-sm transition flex items-center justify-center shrink-0 text-indigo-600"
+                    title="ورودی صوتی / Voice Input"
+                    class="bg-white dark:bg-slate-800 hover:bg-slate-50 text-indigo-600 dark:text-indigo-400 active:scale-90 font-bold p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs transition flex items-center justify-center shrink-0"
                 >
-                    <svg id="mic-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
                 </button>
-                <!-- دکمه ثبت تسک با گرادیان پرانرژی -->
+                <!-- دکمه ثبت تسک -->
                 <button 
                     type="submit" 
-                    class="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 active:scale-95 text-white font-black p-2.5 rounded-2xl shadow-[0_4px_15px_rgba(79,70,229,0.35)] transition flex items-center justify-center shrink-0"
+                    class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 active:scale-90 text-white font-black p-2.5 rounded-2xl shadow-[0_4px_14px_rgba(79,70,229,0.4)] transition flex items-center justify-center shrink-0"
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.6" d="M12 4v16m8-8H4"/></svg>
                 </button>
             </form>
 
-            <!-- نوار پایینی: کپی‌رایت و نشانگر نسخه نرم‌افزار -->
-            <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium">
+            <!-- فوتر کپی‌رایت و شماره نسخه -->
+            <div class="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400 font-medium">
                 <div class="flex items-center gap-1.5">
-                    <span>© Todo Assistant</span>
+                    <span class="font-bold text-slate-500 dark:text-slate-400">© Argon Todo</span>
                     <span>•</span>
-                    <span class="text-slate-500 font-bold">همگام‌سازی ابری</span>
+                    <span data-i18n="footerCloudSync">همگام‌سازی ابری هوشمند</span>
                 </div>
-                <div class="flex items-center gap-1 bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-mono text-[9px] border border-slate-200/60 font-bold">
-                    <span>v1.8.1</span>
+                <div class="flex items-center gap-1 bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-mono text-[9px] border border-indigo-200/60 dark:border-slate-700 font-black">
+                    <span>v3.0.0 Argon</span>
                 </div>
             </div>
         </footer>
 
         <!-- ۱. مودال گزارشات و نمودارها -->
-        <div id="reports-modal" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-3 animate-in fade-in duration-200">
-            <div class="bg-white rounded-[32px] w-full max-w-sm max-h-[88vh] flex flex-col shadow-2xl overflow-hidden border border-slate-100">
-                <div class="p-4 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white flex items-center justify-between">
-                    <h3 class="font-black text-sm flex items-center gap-2" data-i18n="reportsTitle">📊 گزارش تحلیلی کارها</h3>
-                    <button id="close-reports-btn" class="w-7 h-7 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-xs font-bold transition">✕</button>
+        <div id="reports-modal" class="hidden fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-3">
+            <div class="bg-white dark:bg-slate-900 rounded-[32px] w-full max-w-sm max-h-[88vh] flex flex-col shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800">
+                <div class="p-4 argon-header text-white flex items-center justify-between">
+                    <h3 class="font-black text-sm flex items-center gap-2" data-i18n="reportsTitle">📊 گزارش تحلیلی عملکرد</h3>
+                    <button id="close-reports-btn" class="w-7 h-7 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center text-white text-xs font-bold transition">✕</button>
                 </div>
                 <div class="p-4 overflow-y-auto no-scrollbar space-y-3.5 text-xs">
                     <div class="grid grid-cols-2 gap-2 text-center">
-                        <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-2xl shadow-sm">
+                        <div class="bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 p-3 rounded-2xl">
                             <span class="text-slate-400 text-[10px] font-bold block" data-i18n="repTotal">کل کارها</span>
-                            <span id="rep-total-tasks" class="text-xl font-black text-slate-800 font-mono">0</span>
+                            <span id="rep-total-tasks" class="text-xl font-black text-slate-800 dark:text-white font-mono">0</span>
                         </div>
-                        <div class="bg-emerald-50 border border-emerald-200/80 p-3 rounded-2xl shadow-sm">
-                            <span class="text-emerald-600 text-[10px] font-bold block" data-i18n="repDone">تکمیل‌شده</span>
-                            <span id="rep-done-tasks" class="text-xl font-black text-emerald-700 font-mono">0</span>
+                        <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 p-3 rounded-2xl">
+                            <span class="text-emerald-600 dark:text-emerald-400 text-[10px] font-bold block" data-i18n="repDone">تکمیل‌شده</span>
+                            <span id="rep-done-tasks" class="text-xl font-black text-emerald-700 dark:text-emerald-300 font-mono">0</span>
                         </div>
-                        <div class="bg-indigo-50 border border-indigo-200/80 p-3 rounded-2xl shadow-sm">
-                            <span class="text-indigo-600 text-[10px] font-bold block" data-i18n="repRate">درصد تکمیل</span>
-                            <span id="rep-percent" class="text-xl font-black text-indigo-700 font-mono">0%</span>
+                        <div class="bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 p-3 rounded-2xl">
+                            <span class="text-indigo-600 dark:text-indigo-400 text-[10px] font-bold block" data-i18n="repRate">نرخ بهره‌وری</span>
+                            <span id="rep-percent" class="text-xl font-black text-indigo-700 dark:text-indigo-300 font-mono">0%</span>
                         </div>
-                        <div class="bg-amber-50 border border-amber-200/80 p-3 rounded-2xl shadow-sm">
-                            <span class="text-amber-600 text-[10px] font-bold block" data-i18n="repActual">زمان واقعی مصرفی</span>
-                            <span id="rep-actual-time" class="text-xl font-black text-amber-700 font-mono">0 د</span>
+                        <div class="bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 p-3 rounded-2xl">
+                            <span class="text-amber-600 dark:text-amber-400 text-[10px] font-bold block" data-i18n="repActual">زمان واقعی مصرفی</span>
+                            <span id="rep-actual-time" class="text-xl font-black text-amber-700 dark:text-amber-300 font-mono">0 د</span>
                         </div>
                     </div>
-                    <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-2xl shadow-sm">
-                        <h4 class="font-extrabold text-[11px] text-slate-700 mb-2.5" data-i18n="repChartTitle">مقایسه برنامه‌ریزی و اجرا در برچسب‌ها:</h4>
-                        <canvas id="tasks-chart" height="180"></canvas>
+                    <div class="bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 p-3 rounded-2xl">
+                        <h4 class="font-extrabold text-[11px] text-slate-700 dark:text-slate-200 mb-2.5" data-i18n="repChartTitle">مقایسه برنامه‌ریزی و اجرا در برچسب‌ها:</h4>
+                        <canvas id="tasks-chart" height="185"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- ۲. مودال مدیریت کامل برچسب‌ها -->
-        <div id="tags-manager-modal" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-3 animate-in fade-in duration-200">
-            <div class="bg-white rounded-[32px] w-full max-w-sm max-h-[85vh] flex flex-col shadow-2xl overflow-hidden border border-slate-100">
-                <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+        <div id="tags-manager-modal" class="hidden fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-3">
+            <div class="bg-white dark:bg-slate-900 rounded-[32px] w-full max-w-sm max-h-[86vh] flex flex-col shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800">
+                <div class="p-4 bg-slate-900 dark:bg-slate-950 text-white flex items-center justify-between">
                     <h3 class="font-black text-sm flex items-center gap-2" data-i18n="manageTagsHeading">🏷️ مدیریت برچسب‌ها و پروژه‌ها</h3>
                     <button id="close-tags-manager-btn" class="w-7 h-7 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 text-xs font-bold transition">✕</button>
                 </div>
                 <div class="p-4 overflow-y-auto no-scrollbar space-y-3.5 text-xs flex-1">
-                    <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 space-y-2.5 shadow-sm">
-                        <label class="block font-extrabold text-slate-700 text-[11px]" data-i18n="addTagLabel">افزودن برچسب یا پروژه جدید:</label>
-                        <input type="text" id="manager-new-tag-name" placeholder="نام برچسب (مثلاً: پروژه شرکت)..." data-i18n-ph="newTagPlaceholder" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-500 shadow-inner font-medium">
-                        <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-600 font-bold">
+                    <div class="bg-slate-50 dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700 space-y-2.5">
+                        <label class="block font-extrabold text-slate-700 dark:text-slate-200 text-[11px]" data-i18n="addTagLabel">افزودن برچسب یا پروژه جدید:</label>
+                        <input type="text" id="manager-new-tag-name" placeholder="نام برچسب (مثلاً: شرکت، شخصی)..." data-i18n-ph="newTagPlaceholder" class="w-full bg-white dark:bg-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                        <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-600 dark:text-slate-300 font-bold select-none">
                             <input type="checkbox" id="manager-new-tag-tracking" class="rounded text-indigo-600 w-4 h-4">
-                            <span data-i18n="tagNeedTimeCheck">نیاز به تخمین زمان و سررسید دارد</span>
+                            <span data-i18n="tagNeedTimeCheck">نیاز به تخمین زمان و تاریخ سررسید دارد (⏱️)</span>
                         </label>
-                        <button id="manager-add-tag-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl font-black shadow-md transition active:scale-95" data-i18n="addTagToListBtn">افزودن به لیست</button>
+                        <button type="button" id="manager-add-tag-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl font-black shadow-md transition active:scale-95" data-i18n="addTagToListBtn">افزودن برچسب</button>
                     </div>
                     <div>
-                        <h4 class="font-extrabold text-slate-700 text-[11px] mb-2" data-i18n="definedTagsTitle">برچسب‌های تعریف‌شده:</h4>
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-extrabold text-slate-700 dark:text-slate-300 text-[11px]" data-i18n="definedTagsTitle">برچسب‌های تعریف‌شده:</h4>
+                            <span class="text-[10px] text-slate-400" data-i18n="clickTimerHint">برای تغییر وضعیت ⏱️ روی آن کلیک کنید</span>
+                        </div>
                         <div id="manager-tags-list" class="space-y-2">
-                            <!-- JS -->
+                            <!-- توسط JS پر می‌شود -->
                         </div>
                     </div>
                 </div>
@@ -354,48 +469,48 @@
         </div>
 
         <!-- ۳. مودال ثبت زمان واقعی -->
-        <div id="actual-time-modal" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-3 animate-in fade-in duration-200">
-            <div class="bg-white rounded-[32px] w-full max-w-xs p-4 shadow-2xl text-xs space-y-3.5 border border-slate-100">
-                <h3 class="font-black text-sm text-slate-800 flex items-center gap-2" data-i18n="actualTimeModalTitle">⏱️ ثبت زمان واقعی صرف‌شده</h3>
-                <p id="actual-time-task-title" class="text-slate-500 text-[11px] truncate bg-slate-50 p-2 rounded-xl font-bold"></p>
+        <div id="actual-time-modal" class="hidden fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-3">
+            <div class="bg-white dark:bg-slate-900 rounded-[32px] w-full max-w-xs p-4 shadow-2xl text-xs space-y-3.5 border border-slate-100 dark:border-slate-800">
+                <h3 class="font-black text-sm text-slate-800 dark:text-white flex items-center gap-2" data-i18n="actualTimeModalTitle">⏱️ ثبت زمان واقعی صرف‌شده</h3>
+                <p id="actual-time-task-title" class="text-slate-500 dark:text-slate-300 text-[11px] truncate bg-slate-50 dark:bg-slate-800 p-2 rounded-xl font-bold"></p>
                 <div>
-                    <label class="block font-extrabold text-slate-700 mb-1" data-i18n="actualMinLabel">دقیقه واقعی:</label>
-                    <input type="number" id="actual-minutes-input" placeholder="30" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 outline-none font-mono text-xs focus:ring-2 focus:ring-indigo-500 shadow-inner">
+                    <label class="block font-extrabold text-slate-700 dark:text-slate-300 mb-1" data-i18n="actualMinLabel">مدت زمان واقعی (دقیقه):</label>
+                    <input type="number" id="actual-minutes-input" placeholder="30" class="w-full bg-slate-50 dark:bg-slate-800 dark:text-white border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 outline-none font-mono text-xs focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div class="flex items-center gap-2 pt-1">
-                    <button id="cancel-actual-time-btn" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl font-black transition" data-i18n="cancelBtn">انصراف</button>
+                    <button id="cancel-actual-time-btn" class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 py-2 rounded-xl font-black transition" data-i18n="cancelBtn">انصراف</button>
                     <button id="save-actual-time-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl font-black shadow-md transition" data-i18n="saveTimeBtn">ذخیره زمان</button>
                 </div>
             </div>
         </div>
 
-        <!-- ۴. مودال لاگین و اتصال ابری -->
-        <div id="user-modal" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-3 animate-in fade-in duration-200">
-            <div class="bg-white rounded-[32px] w-full max-w-xs p-4.5 shadow-2xl text-xs space-y-3.5 border border-slate-100">
-                <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
-                    <h3 class="font-black text-sm text-slate-800 flex items-center gap-2" data-i18n="userModalTitle">حساب کاربری و سینک</h3>
-                    <button id="close-user-modal-btn" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 font-bold">✕</button>
+        <!-- ۴. مودال حساب کاربری و سینک ابری -->
+        <div id="user-modal" class="hidden fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-3">
+            <div class="bg-white dark:bg-slate-900 rounded-[32px] w-full max-w-xs p-4 shadow-2xl text-xs space-y-3.5 border border-slate-100 dark:border-slate-800">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <h3 class="font-black text-sm text-slate-800 dark:text-white flex items-center gap-2" data-i18n="userModalTitle">☁️ حساب کاربری و سینک</h3>
+                    <button id="close-user-modal-btn" class="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 flex items-center justify-center text-slate-500 font-bold">✕</button>
                 </div>
 
                 <div id="logged-in-section" class="hidden space-y-3">
-                    <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200/80 shadow-sm">
-                        <img id="modal-user-avatar" src="" class="w-10 h-10 rounded-full bg-slate-200 ring-2 ring-indigo-500/20">
+                    <div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+                        <img id="modal-user-avatar" src="" class="w-10 h-10 rounded-full bg-slate-200 ring-2 ring-indigo-500/30">
                         <div class="min-w-0 flex-1">
-                            <p id="modal-user-name" class="font-black text-slate-800 truncate"></p>
+                            <p id="modal-user-name" class="font-black text-slate-800 dark:text-white truncate"></p>
                             <p id="modal-user-email" class="text-[10px] text-slate-400 truncate font-mono"></p>
                         </div>
                     </div>
-                    <button id="disconnect-btn" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 py-2.5 rounded-2xl font-black transition active:scale-95" data-i18n="logoutBtn">خروج و قطع اتصال</button>
+                    <button id="disconnect-btn" class="w-full bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 text-rose-600 dark:text-rose-400 py-2.5 rounded-2xl font-black transition active:scale-95" data-i18n="logoutBtn">خروج و قطع اتصال</button>
                 </div>
 
                 <div id="login-options-section" class="space-y-3">
-                    <button id="google-login-btn" class="w-full flex items-center justify-center gap-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 py-2.5 rounded-2xl font-extrabold shadow-sm transition active:scale-95">
+                    <button id="google-login-btn" class="w-full flex items-center justify-center gap-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 py-2.5 rounded-2xl font-extrabold shadow-xs transition active:scale-95">
                         <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
                         <span data-i18n="googleLoginBtn">ورود با اکانت گوگل</span>
                     </button>
-                    <div class="relative text-center my-1"><span class="bg-white px-2 text-[10px] text-slate-400 font-bold" data-i18n="orCustomKey">یا شناسه سفارشی</span></div>
+                    <div class="relative text-center my-1"><span class="bg-white dark:bg-slate-900 px-2 text-[10px] text-slate-400 font-bold" data-i18n="orCustomKey">یا شناسه اتاق مشترک</span></div>
                     <form id="key-sync-form" class="space-y-2">
-                        <input type="text" id="custom-sync-key" placeholder="کلید مشترک..." data-i18n-ph="customKeyPlaceholder" class="w-full bg-slate-50 border border-slate-300 rounded-2xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-500 shadow-inner font-medium">
+                        <input type="text" id="custom-sync-key" placeholder="مثلاً: کلید مشترک خانواده..." data-i18n-ph="customKeyPlaceholder" class="w-full bg-slate-50 dark:bg-slate-800 dark:text-white border border-slate-300 dark:border-slate-700 rounded-2xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
                         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-2xl font-black shadow-md transition active:scale-95" data-i18n="connectKeyBtn">اتصال با شناسه</button>
                     </form>
                 </div>
@@ -409,19 +524,20 @@
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // دیکشنری بین‌المللی چندزبانه (i18n)
+        // دیکشنری دو زبانه کامل (FA / EN)
         const i18n = {
             fa: {
                 appTitle: "کارهای روزمره من",
-                syncOnline: "همگام با سرور",
+                syncOnline: "همگام با ابر",
                 syncOffline: "حالت محلی",
-                syncError: "خطای دسترسی سرور",
-                notifyBtn: "اعلان",
-                notifyActive: "فعال",
-                reportBtn: "گزارش",
-                loginBtn: "ورود",
-                connectedBtn: "متصل",
-                searchPlaceholder: "جستجو در متن یا برچسب‌ها (#)...",
+                syncError: "خطای سرور",
+                dailyProgressTitle: "پیشرفت کارهای فعال",
+                completedOfTotal: "{done} از {total} انجام شده",
+                notifyBtn: "اعلان یادآوری",
+                reportBtn: "گزارش و نمودارها",
+                loginBtn: "ورود و سینک ابری",
+                connectedBtn: "متصل به ابر",
+                searchPlaceholder: "جستجو در عنوان یا برچسب‌ها (#)...",
                 pomoFocus: "تمرکز:",
                 pomoFinish: "ثبت",
                 filterAll: "همه",
@@ -429,47 +545,54 @@
                 filterDone: "انجام‌شده",
                 filterArchived: "آرشیو",
                 tagsManagerBtn: "برچسب‌ها",
+                moreFilterBtn: "+ بیشتر",
                 allTasksTab: "همه کارها",
                 dateFrom: "از:",
                 dateTo: "تا:",
-                clearFilter: "حذف فیلتر",
-                emptyTitle: "کاری برای نمایش وجود ندارد",
-                emptySub: "کار جدیدی بنویسید یا فیلتر را تغییر دهید",
+                clearFilter: "پاکسازی",
+                emptyTitle: "لیست کارهای شما خالی است",
+                emptySub: "کار جدیدی در پایین بنویسید یا با میکروفون بگویید",
                 loadMore: "نمایش موارد بیشتر...",
                 tagsLabel: "برچسب‌ها:",
                 noTagSelected: "هیچ برچسبی انتخاب نشده",
-                otherTagsOpt: "+ سایر برچسب‌ها...",
+                otherTagsOpt: "+ سایر برچسب‌ها",
                 estMinLabel: "تخمین زمان (دقیقه):",
                 dueDateLabel: "تاریخ سررسید:",
                 taskInputPlaceholder: "کار جدید را بنویسید یا بگویید...",
-                reportsTitle: "📊 گزارش تحلیلی کارها",
+                prioNormal: "عادی",
+                prioHigh: "مهم",
+                prioUrgent: "فوری",
+                footerCloudSync: "همگام‌سازی ابری هوشمند",
+                reportsTitle: "📊 گزارش تحلیلی عملکرد",
                 repTotal: "کل کارها",
                 repDone: "تکمیل‌شده",
-                repRate: "درصد تکمیل",
+                repRate: "نرخ بهره‌وری",
                 repActual: "زمان واقعی مصرفی",
                 repChartTitle: "مقایسه برنامه‌ریزی و اجرا در برچسب‌ها:",
                 repPlannedLabel: "کل",
                 repCompletedLabel: "انجام‌شده",
                 manageTagsHeading: "🏷️ مدیریت برچسب‌ها و پروژه‌ها",
                 addTagLabel: "افزودن برچسب یا پروژه جدید:",
-                newTagPlaceholder: "نام برچسب (مثلاً: پروژه شرکت)...",
-                tagNeedTimeCheck: "نیاز به تخمین زمان و سررسید دارد",
-                addTagToListBtn: "افزودن به لیست",
+                newTagPlaceholder: "نام برچسب (مثلاً: شرکت، شخصی)...",
+                tagNeedTimeCheck: "نیاز به تخمین زمان و تاریخ سررسید دارد (⏱️)",
+                addTagToListBtn: "افزودن برچسب",
                 definedTagsTitle: "برچسب‌های تعریف‌شده:",
-                noTagDefined: "هیچ برچسبی تعریف نشده است.",
-                tagTimedBadge: "زمان‌دار",
+                clickTimerHint: "برای تغییر وضعیت ⏱️ روی آن کلیک کنید",
+                noTagDefined: "هنوز برچسبی تعریف نشده است.",
+                tagTimedBadge: "⏱️ زمان‌دار",
+                tagSimpleBadge: "ساده",
                 deleteBtn: "حذف",
                 actualTimeModalTitle: "⏱️ ثبت زمان واقعی صرف‌شده",
-                actualMinLabel: "دقیقه واقعی:",
+                actualMinLabel: "مدت زمان واقعی (دقیقه):",
                 cancelBtn: "انصراف",
                 saveTimeBtn: "ذخیره زمان",
-                userModalTitle: "حساب کاربری و سینک",
+                userModalTitle: "☁️ حساب کاربری و سینک",
                 logoutBtn: "خروج و قطع اتصال",
                 googleLoginBtn: "ورود با اکانت گوگل",
-                orCustomKey: "یا شناسه سفارشی",
-                customKeyPlaceholder: "مثلاً: کلید مشترک خانه...",
+                orCustomKey: "یا شناسه اتاق مشترک",
+                customKeyPlaceholder: "مثلاً: کلید مشترک خانواده...",
                 connectKeyBtn: "اتصال با شناسه",
-                tagFilterTooltip: "کلیک برای فیلتر این برچسب",
+                tagFilterTooltip: "کلیک برای فیلتر بر اساس این برچسب",
                 estPrefix: "تخمین:",
                 actPrefix: "واقعی:",
                 minUnit: "د",
@@ -477,83 +600,91 @@
                 restoreBtn: "بازگردانی",
                 archiveBtn: "آرشیو",
                 pomoBtnText: "🍅 تمرکز",
-                taskSavedToast: "کار جدید ذخیره شد",
-                listeningToast: "🎤 در حال شنیدن صدای شما... بگویید",
-                micPermissionToast: "⚠️ لطفاً مجوز دسترسی به میکروفون را تأیید کنید",
-                noSpeechToast: "صدایی شنیده نشد، دوباره امتحان کنید",
-                micNotSupportedToast: "مرورگر شما از تشخیص گفتار صوتی پشتیبانی نمی‌کند",
-                pomoCompletedToast: "🍅 پایان تمرکز",
-                pomoBodyToast: "تمرکز روی کار تکمیل شد.",
+                taskSavedToast: "✅ کار جدید ذخیره شد",
+                listeningToast: "🎤 در حال شنیدن صدای شما... صحبت کنید",
+                micPermissionToast: "⚠️ لطفاً دسترسی میکروفون را در مرورگر فعال کنید",
+                noSpeechToast: "صدایی دریافت نشد، دوباره تلاش کنید",
+                micNotSupportedToast: "مرورگر شما از تبدیل گفتار به متن پشتیبانی نمی‌کند",
+                pomoCompletedToast: "🍅 پایان جلسه تمرکز",
+                pomoBodyToast: "جلسه تمرکز با موفقیت به پایان رسید.",
                 pomoSavedTimeToast: "دقیقه روی کار ثبت شد",
-                notifyActivatedToast: "اعلان‌ها فعال شدند",
-                notifyNotSupported: "مرورگر از نوتیفیکیشن پشتیبانی نمی‌کند",
+                notifyActivatedToast: "🔔 اعلان‌های مرورگر فعال شدند",
+                notifyNotSupported: "مرورگر از اعلان پشتیبانی نمی‌کند",
                 enterTagNameToast: "لطفاً نام برچسب را وارد کنید",
-                tagDuplicateToast: "این برچسب از قبل تعریف شده است",
-                tagAddedToast: "با موفقیت افزوده شد",
+                tagDuplicateToast: "این برچسب قبلاً ساخته شده است",
+                tagAddedToast: "اضافه شد",
                 tagRemovedToast: "حذف شد",
-                timeSavedToast: "زمان با موفقیت ثبت شد",
-                loginSuccessToast: "ورود با گوگل با موفقیت انجام شد",
-                roomConnectedToast: "متصل به اتاق:",
-                logoutToast: "خروج با موفقیت انجام شد"
+                timeSavedToast: "⏱️ زمان واقعی ثبت شد",
+                loginSuccessToast: "ورود با گوگل انجام شد",
+                roomConnectedToast: "متصل به شناسه:",
+                logoutToast: "خروج انجام شد"
             },
             en: {
-                appTitle: "Daily Tasks Manager",
-                syncOnline: "Synced with Cloud",
+                appTitle: "My Daily Tasks",
+                syncOnline: "Cloud Synced",
                 syncOffline: "Local Mode",
-                syncError: "Server Permission Error",
-                notifyBtn: "Notify",
-                notifyActive: "Active",
-                reportBtn: "Reports",
-                loginBtn: "Login",
-                connectedBtn: "Connected",
+                syncError: "Sync Error",
+                dailyProgressTitle: "Active Tasks Progress",
+                completedOfTotal: "{done} of {total} completed",
+                notifyBtn: "Notifications",
+                reportBtn: "Analytics & Charts",
+                loginBtn: "Cloud Sync & Login",
+                connectedBtn: "Cloud Connected",
                 searchPlaceholder: "Search tasks or tags (#)...",
                 pomoFocus: "Focus:",
                 pomoFinish: "Log",
                 filterAll: "All",
                 filterActive: "Active",
-                filterDone: "Completed",
-                filterArchived: "Archive",
+                filterDone: "Done",
+                filterArchived: "Archived",
                 tagsManagerBtn: "Tags",
+                moreFilterBtn: "+ More",
                 allTasksTab: "All Tasks",
                 dateFrom: "From:",
                 dateTo: "To:",
-                clearFilter: "Clear Filter",
-                emptyTitle: "No tasks to display",
-                emptySub: "Add a new task or adjust the filter",
-                loadMore: "Load more...",
+                clearFilter: "Reset",
+                emptyTitle: "Your task list is empty",
+                emptySub: "Type a new task below or use voice input",
+                loadMore: "Load more tasks...",
                 tagsLabel: "Tags:",
                 noTagSelected: "No tags selected",
-                otherTagsOpt: "+ More tags...",
+                otherTagsOpt: "+ More tags",
                 estMinLabel: "Est. Time (min):",
                 dueDateLabel: "Due Date:",
-                taskInputPlaceholder: "Type or speak your task...",
-                reportsTitle: "📊 Task Performance Reports",
+                taskInputPlaceholder: "Type or speak a new task...",
+                prioNormal: "Normal",
+                prioHigh: "High",
+                prioUrgent: "Urgent",
+                footerCloudSync: "Smart Cloud Sync",
+                reportsTitle: "📊 Performance Analytics",
                 repTotal: "Total Tasks",
                 repDone: "Completed",
-                repRate: "Completion Rate",
+                repRate: "Success Rate",
                 repActual: "Actual Time Spent",
                 repChartTitle: "Planned vs Completed by Tag:",
                 repPlannedLabel: "Total",
                 repCompletedLabel: "Completed",
-                manageTagsHeading: "🏷️ Tag & Project Management",
-                addTagLabel: "Add new tag or project:",
-                newTagPlaceholder: "Tag name (e.g. Work Project)...",
-                tagNeedTimeCheck: "Requires time estimate and due date",
-                addTagToListBtn: "Add to List",
-                definedTagsTitle: "Existing Tags:",
-                noTagDefined: "No tags defined yet.",
-                tagTimedBadge: "Timed",
+                manageTagsHeading: "🏷️ Manage Tags & Projects",
+                addTagLabel: "Create new tag or project:",
+                newTagPlaceholder: "Tag name (e.g. Work, Personal)...",
+                tagNeedTimeCheck: "Requires time estimate & due date (⏱️)",
+                addTagToListBtn: "Add Tag",
+                definedTagsTitle: "Defined Tags:",
+                clickTimerHint: "Click badge to toggle ⏱️ timer mode",
+                noTagDefined: "No tags created yet.",
+                tagTimedBadge: "⏱️ Timed",
+                tagSimpleBadge: "Standard",
                 deleteBtn: "Delete",
-                actualTimeModalTitle: "⏱️ Log Actual Spent Time",
-                actualMinLabel: "Actual minutes:",
+                actualTimeModalTitle: "⏱️ Log Actual Time Spent",
+                actualMinLabel: "Actual duration (minutes):",
                 cancelBtn: "Cancel",
                 saveTimeBtn: "Save Time",
-                userModalTitle: "Account & Cloud Sync",
+                userModalTitle: "☁️ Account & Cloud Sync",
                 logoutBtn: "Log out & Disconnect",
                 googleLoginBtn: "Sign in with Google",
-                orCustomKey: "Or Custom Room ID",
-                customKeyPlaceholder: "e.g. Home shared key...",
-                connectKeyBtn: "Connect with ID",
+                orCustomKey: "Or Shared Room Key",
+                customKeyPlaceholder: "e.g. Family shared key...",
+                connectKeyBtn: "Connect with Key",
                 tagFilterTooltip: "Click to filter by this tag",
                 estPrefix: "Est:",
                 actPrefix: "Act:",
@@ -562,97 +693,51 @@
                 restoreBtn: "Restore",
                 archiveBtn: "Archive",
                 pomoBtnText: "🍅 Focus",
-                taskSavedToast: "New task saved",
-                listeningToast: "🎤 Listening to your voice... Speak now",
-                micPermissionToast: "⚠️ Please grant microphone permission",
-                noSpeechToast: "No speech heard, try again",
-                micNotSupportedToast: "Your browser does not support Speech Recognition",
-                pomoCompletedToast: "🍅 Focus Session Completed",
-                pomoBodyToast: "Focus session completed successfully.",
-                pomoSavedTimeToast: "minutes recorded on task",
-                notifyActivatedToast: "Notifications activated",
-                notifyNotSupported: "Browser does not support notifications",
+                taskSavedToast: "✅ New task added",
+                listeningToast: "🎤 Listening... Speak now",
+                micPermissionToast: "⚠️ Please allow microphone access",
+                noSpeechToast: "No speech detected, try again",
+                micNotSupportedToast: "Speech recognition is not supported in this browser",
+                pomoCompletedToast: "🍅 Focus Session Complete",
+                pomoBodyToast: "Great job! Your focus session is complete.",
+                pomoSavedTimeToast: "minutes logged to task",
+                notifyActivatedToast: "🔔 Browser notifications enabled",
+                notifyNotSupported: "Notifications not supported",
                 enterTagNameToast: "Please enter a tag name",
                 tagDuplicateToast: "This tag already exists",
-                tagAddedToast: "added successfully",
-                tagRemovedToast: "deleted",
-                timeSavedToast: "Time saved successfully",
-                loginSuccessToast: "Logged in with Google successfully",
+                tagAddedToast: "added",
+                tagRemovedToast: "removed",
+                timeSavedToast: "⏱️ Actual time saved",
+                loginSuccessToast: "Signed in with Google",
                 roomConnectedToast: "Connected to room:",
-                logoutToast: "Logged out successfully"
+                logoutToast: "Logged out"
             }
         };
 
         const LANG_STORAGE_KEY = 'MY_TODO_LANG';
-        let currentLang = localStorage.getItem(LANG_STORAGE_KEY) || 'fa';
-
-        function t(key) {
-            return (i18n[currentLang] && i18n[currentLang][key]) || key;
-        }
-
-        function applyLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem(LANG_STORAGE_KEY, lang);
-            document.documentElement.lang = lang;
-            document.documentElement.dir = (lang === 'fa') ? 'rtl' : 'ltr';
-
-            const langToggleBtn = document.getElementById('lang-toggle-btn');
-            if (langToggleBtn) {
-                langToggleBtn.textContent = lang === 'fa' ? 'EN' : 'فا';
-            }
-
-            // تنظیم موقعیت دراپ‌داون متناسب با LTR و RTL تا از کادر بیرون نزند
-            const headerDropdown = document.getElementById('header-menu-dropdown');
-            if (headerDropdown) {
-                if (lang === 'fa') {
-                    headerDropdown.classList.remove('right-0');
-                    headerDropdown.classList.add('left-0');
-                } else {
-                    headerDropdown.classList.remove('left-0');
-                    headerDropdown.classList.add('right-0');
-                }
-            }
-
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const k = el.getAttribute('data-i18n');
-                if (k && i18n[lang][k]) {
-                    el.textContent = i18n[lang][k];
-                }
-            });
-
-            document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-                const k = el.getAttribute('data-i18n-ph');
-                if (k && i18n[lang][k]) {
-                    el.placeholder = i18n[lang][k];
-                }
-            });
-
-            if (recognizer) {
-                recognizer.lang = (lang === 'fa') ? 'fa-IR' : 'en-US';
-            }
-
-            renderProjectsBar();
-            renderUI();
-        }
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBfwjUJw52_Jz_15PBfAfW422VRL9-DL24",
-            authDomain: "todo-1f659.firebaseapp.com",
-            projectId: "todo-1f659",
-            storageBucket: "todo-1f659.firebasestorage.app",
-            messagingSenderId: "228355662827",
-            appId: "1:228355662827:web:ced5fff4a94413c757afae",
-            measurementId: "G-DL12LJR1K5"
-        };
-
+        const THEME_STORAGE_KEY = 'MY_TODO_THEME';
         const LOCAL_STORAGE_KEY = 'MY_SYNC_TODO_DATA';
         const ACTIVE_SYNC_ID_KEY = 'MY_ACTIVE_SYNC_ID';
         const PROJECTS_STORAGE_KEY = 'MY_SYNC_PROJECTS_DATA';
         const ALL_PROJECTS_TAB_KEY = 'ALL_PROJECTS_SPECIAL_TAB';
 
+        let currentLang = localStorage.getItem(LANG_STORAGE_KEY) || 'fa';
+        let currentTheme = localStorage.getItem(THEME_STORAGE_KEY) || 'light';
+
         let todos = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
         let projects = JSON.parse(localStorage.getItem(PROJECTS_STORAGE_KEY) || '[]');
+
+        // اگر کاربر بار اول است، ۲ برچسب نمونه پیش‌فرض بسازیم تا رابط کاربری خالی نباشد
+        if (projects.length === 0 && todos.length === 0) {
+            projects = [
+                { name: 'شخصی', timeTracking: false },
+                { name: 'پروژه کاری', timeTracking: true }
+            ];
+            localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+        }
+
         let selectedTagsForNewTask = new Set();
+        let currentNewTaskPriority = 'normal'; // normal | high | urgent
         let currentFilter = 'all';
         let currentProjectFilter = ALL_PROJECTS_TAB_KEY;
         let searchQuery = '';
@@ -672,12 +757,16 @@
         let pomodoroTimerInterval = null;
         let pomodoroIsPaused = false;
         let syncTextTimeout = null;
+        let recognizer = null;
+        let isRecordingVoice = false;
 
+        // ارجاع به المنت‌های DOM
         const todoList = document.getElementById('todo-list');
         const emptyState = document.getElementById('empty-state');
         const addForm = document.getElementById('add-form');
         const taskInput = document.getElementById('task-input');
         const searchInput = document.getElementById('search-input');
+        const clearSearchBtn = document.getElementById('clear-search-btn');
         const searchContainer = document.getElementById('search-container');
         const searchToggleBtn = document.getElementById('search-toggle-btn');
         const toastMsg = document.getElementById('toast-msg');
@@ -688,13 +777,24 @@
         const authActionBtn = document.getElementById('auth-action-btn');
         const authBtnLabel = document.getElementById('auth-btn-label');
         const projectsBar = document.getElementById('projects-bar');
+        const filterMoreProjectsWrapper = document.getElementById('filter-more-projects-wrapper');
+        const filterMoreProjectsBtn = document.getElementById('filter-more-projects-btn');
+        const filterMoreProjectsLabel = document.getElementById('filter-more-projects-label');
+        const filterMoreProjectsMenu = document.getElementById('filter-more-projects-menu');
         const selectedTagsSummary = document.getElementById('selected-tags-summary');
         const quickTagsContainer = document.getElementById('quick-tags-container');
-        const otherTagsSelect = document.getElementById('other-tags-select');
+        const otherTagsDropdownTrigger = document.getElementById('other-tags-dropdown-trigger');
+        const otherTagsDropdownMenu = document.getElementById('other-tags-dropdown-menu');
+        const otherTagsDropdownWrapper = document.getElementById('other-tags-dropdown-wrapper');
         const timeTrackingFields = document.getElementById('time-tracking-fields');
         const taskEstMinutes = document.getElementById('task-est-minutes');
         const taskDueDate = document.getElementById('task-due-date');
+        const priorityCycleBtn = document.getElementById('priority-cycle-btn');
+        const priorityDot = document.getElementById('priority-dot');
+        const priorityLabel = document.getElementById('priority-label');
         const langToggleBtn = document.getElementById('lang-toggle-btn');
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        const themeIcon = document.getElementById('theme-icon');
         const headerMenuBtn = document.getElementById('header-menu-btn');
         const headerMenuDropdown = document.getElementById('header-menu-dropdown');
         const openReportsBtn = document.getElementById('open-reports-btn');
@@ -722,20 +822,159 @@
         const loadMoreBtn = document.getElementById('load-more-btn');
         const loadMoreContainer = document.getElementById('load-more-container');
 
-        // منوی کشویی هدر
-        if (headerMenuBtn && headerMenuDropdown) {
+        function t(key) {
+            return (i18n[currentLang] && i18n[currentLang][key]) || key;
+        }
+
+        function applyTheme(theme) {
+            currentTheme = theme;
+            localStorage.setItem(THEME_STORAGE_KEY, theme);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                if (themeIcon) themeIcon.textContent = '☀️';
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (themeIcon) themeIcon.textContent = '🌙';
+            }
+        }
+
+        if (themeToggleBtn) {
+            themeToggleBtn.onclick = () => {
+                applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+            };
+        }
+
+        function updateTodayDateBanner() {
+            const label = document.getElementById('today-date-label');
+            if (!label) return;
+            try {
+                const now = new Date();
+                if (currentLang === 'fa') {
+                    label.textContent = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' }).format(now);
+                } else {
+                    label.textContent = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).format(now);
+                }
+            } catch (e) {
+                label.textContent = '';
+            }
+        }
+
+        function updatePriorityButtonUI() {
+            if (!priorityDot || !priorityLabel) return;
+            if (currentNewTaskPriority === 'normal') {
+                priorityDot.className = 'w-2.5 h-2.5 rounded-full bg-slate-400';
+                priorityLabel.textContent = t('prioNormal');
+            } else if (currentNewTaskPriority === 'high') {
+                priorityDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.8)]';
+                priorityLabel.textContent = t('prioHigh');
+            } else {
+                priorityDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.9)] animate-pulse';
+                priorityLabel.textContent = t('prioUrgent');
+            }
+        }
+
+        if (priorityCycleBtn) {
+            priorityCycleBtn.onclick = () => {
+                if (currentNewTaskPriority === 'normal') currentNewTaskPriority = 'high';
+                else if (currentNewTaskPriority === 'high') currentNewTaskPriority = 'urgent';
+                else currentNewTaskPriority = 'normal';
+                updatePriorityButtonUI();
+            };
+        }
+
+        function applyLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem(LANG_STORAGE_KEY, lang);
+            document.documentElement.lang = lang;
+            document.documentElement.dir = (lang === 'fa') ? 'rtl' : 'ltr';
+
+            if (langToggleBtn) {
+                langToggleBtn.textContent = lang === 'fa' ? 'EN' : 'فا';
+            }
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const k = el.getAttribute('data-i18n');
+                if (k && i18n[lang][k]) {
+                    el.textContent = i18n[lang][k];
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+                const k = el.getAttribute('data-i18n-ph');
+                if (k && i18n[lang][k]) {
+                    el.placeholder = i18n[lang][k];
+                }
+            });
+
+            if (recognizer) {
+                recognizer.lang = (lang === 'fa') ? 'fa-IR' : 'en-US';
+            }
+
+            updateTodayDateBanner();
+            updatePriorityButtonUI();
+            updateTagFormUI();
+            renderUI();
+        }
+
+        function updateHeaderProgressRing() {
+            const nonArchived = todos.filter(t => !t.archived);
+            const total = nonArchived.length;
+            const done = nonArchived.filter(t => t.done).length;
+            const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+
+            const circle = document.getElementById('header-progress-circle');
+            const text = document.getElementById('header-progress-text');
+            const sub = document.getElementById('header-stats-sub');
+            const tagsBadge = document.getElementById('total-tags-badge');
+
+            if (circle) {
+                const circumference = 94.2;
+                const offset = circumference - (percent / 100) * circumference;
+                circle.style.strokeDashoffset = offset;
+            }
+            if (text) text.textContent = `${percent}%`;
+            if (sub) {
+                sub.textContent = t('completedOfTotal').replace('{done}', done).replace('{total}', total);
+            }
+            if (tagsBadge) {
+                tagsBadge.textContent = projects.length;
+            }
+        }
+
+        // مدیریت منوهای کشویی و بستن خودکار با کلیک بیرون
+        document.addEventListener('click', (e) => {
+            if (headerMenuDropdown && !headerMenuDropdown.contains(e.target) && e.target !== headerMenuBtn && !headerMenuBtn.contains(e.target)) {
+                headerMenuDropdown.classList.add('hidden');
+            }
+            if (otherTagsDropdownWrapper && !otherTagsDropdownWrapper.contains(e.target)) {
+                otherTagsDropdownMenu.classList.add('hidden');
+            }
+            if (filterMoreProjectsWrapper && !filterMoreProjectsWrapper.contains(e.target)) {
+                filterMoreProjectsMenu.classList.add('hidden');
+            }
+        });
+
+        if (headerMenuBtn) {
             headerMenuBtn.onclick = (e) => {
                 e.stopPropagation();
                 headerMenuDropdown.classList.toggle('hidden');
             };
-            document.addEventListener('click', (e) => {
-                if (!headerMenuDropdown.contains(e.target) && e.target !== headerMenuBtn) {
-                    headerMenuDropdown.classList.add('hidden');
-                }
-            });
         }
 
-        // دکمه باز و بسته کردن سرچ
+        if (otherTagsDropdownTrigger) {
+            otherTagsDropdownTrigger.onclick = (e) => {
+                e.stopPropagation();
+                otherTagsDropdownMenu.classList.toggle('hidden');
+            };
+        }
+
+        if (filterMoreProjectsBtn) {
+            filterMoreProjectsBtn.onclick = (e) => {
+                e.stopPropagation();
+                filterMoreProjectsMenu.classList.toggle('hidden');
+            };
+        }
+
         if (searchToggleBtn && searchContainer) {
             searchToggleBtn.onclick = () => {
                 searchContainer.classList.toggle('hidden');
@@ -754,12 +993,23 @@
         function showNotification(msg) {
             toastMsg.textContent = msg;
             toastMsg.classList.remove('opacity-0');
-            setTimeout(() => toastMsg.classList.add('opacity-0'), 2500);
+            setTimeout(() => toastMsg.classList.add('opacity-0'), 2600);
         }
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfwjUJw52_Jz_15PBfAfW422VRL9-DL24",
+            authDomain: "todo-1f659.firebaseapp.com",
+            projectId: "todo-1f659",
+            storageBucket: "todo-1f659.firebasestorage.app",
+            messagingSenderId: "228355662827",
+            appId: "1:228355662827:web:ced5fff4a94413c757afae",
+            measurementId: "G-DL12LJR1K5"
+        };
 
         function saveLocalData() {
             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
             localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+            updateHeaderProgressRing();
             syncToCloud();
         }
 
@@ -767,7 +1017,7 @@
             if (!db || !activeSyncId) return;
             try {
                 const userDocRef = doc(db, 'users', activeSyncId);
-                const currentUser = auth.currentUser;
+                const currentUser = auth ? auth.currentUser : null;
                 await setDoc(userDocRef, {
                     todos: todos,
                     projects: projects,
@@ -784,18 +1034,16 @@
         }
 
         function updateSyncUI(isOnline, text) {
-            syncStatusDot.className = `absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ${
+            syncStatusDot.className = `absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ${
                 isOnline 
-                    ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]' 
-                    : 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.9)]'
+                    ? 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,1)]' 
+                    : 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,1)]'
             } ring-2 ring-indigo-900 transition-all`;
 
             if (syncStatusText) {
                 syncStatusText.textContent = text;
                 syncStatusText.style.opacity = '1';
-                
                 if (syncTextTimeout) clearTimeout(syncTextTimeout);
-                // متن پس از ۲.۵ ثانیه به نرمی محو می‌شود و فقط چراغ سبز باقی می‌ماند
                 syncTextTimeout = setTimeout(() => {
                     syncStatusText.style.opacity = '0';
                 }, 2500);
@@ -815,7 +1063,7 @@
             if (selectedTagsForNewTask.size === 0) {
                 selectedTagsSummary.textContent = t('noTagSelected');
             } else {
-                selectedTagsSummary.textContent = Array.from(selectedTagsForNewTask).map(tg => `#${tg}`).join(' ');
+                selectedTagsSummary.textContent = Array.from(selectedTagsForNewTask).map(tg => `#${tg}`).join('  ');
             }
 
             const hasTimedTag = Array.from(selectedTagsForNewTask).some(tagName => {
@@ -835,14 +1083,16 @@
         function renderProjectsBar() {
             projectsBar.innerHTML = '';
 
-            // چیپ ویژه «همه کارها»
+            // ۱. چیپ «همه کارها»
             const allBtn = document.createElement('button');
             const isAllActive = (currentProjectFilter === ALL_PROJECTS_TAB_KEY);
-            allBtn.className = `px-3 py-1.5 rounded-xl font-extrabold transition shrink-0 text-xs flex items-center gap-1.5 shadow-sm active:scale-95 ${
-                isAllActive ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+            allBtn.className = `px-3 py-1.5 rounded-xl font-extrabold transition shrink-0 text-xs flex items-center gap-1.5 shadow-xs active:scale-95 ${
+                isAllActive 
+                    ? 'bg-indigo-600 text-white shadow-indigo-300/50' 
+                    : 'bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 text-slate-700 dark:text-slate-200'
             }`;
             const activeCount = todos.filter(t => !t.done && !t.archived).length;
-            allBtn.innerHTML = `<span>${t('allTasksTab')}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isAllActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'} font-mono">${activeCount}</span>`;
+            allBtn.innerHTML = `<span>${t('allTasksTab')}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isAllActive ? 'bg-white/25 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200'} font-mono">${activeCount}</span>`;
             allBtn.onclick = () => {
                 currentProjectFilter = ALL_PROJECTS_TAB_KEY;
                 renderProjectsBar();
@@ -850,7 +1100,7 @@
             };
             projectsBar.appendChild(allBtn);
 
-            // محاسبه برچسب‌های پرکاربرد
+            // محاسبه تگ‌های پرتکرار
             const tagUsageCounts = {};
             todos.forEach(t => {
                 (t.tags || []).forEach(tg => {
@@ -865,14 +1115,17 @@
             const quickProjects = sortedProjects.slice(0, 4);
             const otherProjects = sortedProjects.slice(4);
 
+            // رندر ۴ پروژه پرکاربرد در نوار فیلتر بالا
             quickProjects.forEach(p => {
                 const pBtn = document.createElement('button');
                 const isSelected = (currentProjectFilter === p.name);
-                pBtn.className = `px-3 py-1.5 rounded-xl font-extrabold transition shrink-0 text-xs flex items-center gap-1.5 shadow-sm active:scale-95 ${
-                    isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                pBtn.className = `px-3 py-1.5 rounded-xl font-extrabold transition shrink-0 text-xs flex items-center gap-1.5 shadow-xs active:scale-95 ${
+                    isSelected 
+                        ? 'bg-indigo-600 text-white' 
+                        : 'bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 text-slate-700 dark:text-slate-200'
                 }`;
                 const pCount = todos.filter(t => !t.done && !t.archived && (t.tags || []).includes(p.name)).length;
-                pBtn.innerHTML = `<span>#${p.name}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'} font-mono">${pCount}</span>`;
+                pBtn.innerHTML = `<span dir="auto">#${p.name}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-white/25 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200'} font-mono">${pCount}</span>`;
                 pBtn.onclick = () => {
                     currentProjectFilter = p.name;
                     renderProjectsBar();
@@ -881,41 +1134,106 @@
                 projectsBar.appendChild(pBtn);
             });
 
-            // به‌روزرسانی بخش فرم ثبت تسک (چیپ‌ها و کمبوباکس)
+            // اگر فیلتر فعال جزو otherProjects باشد، دکمه "+ بیشتر" در نوار بالا هایلایت شود
+            if (otherProjects.length === 0) {
+                filterMoreProjectsWrapper.classList.add('hidden');
+            } else {
+                filterMoreProjectsWrapper.classList.remove('hidden');
+                const isOtherActive = otherProjects.some(p => p.name === currentProjectFilter);
+                filterMoreProjectsBtn.className = `px-2.5 py-1.5 rounded-xl font-extrabold text-[11px] flex items-center gap-1 transition active:scale-95 shadow-xs ${
+                    isOtherActive
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200'
+                }`;
+                filterMoreProjectsLabel.textContent = isOtherActive ? `#${currentProjectFilter}` : t('moreFilterBtn');
+
+                filterMoreProjectsMenu.innerHTML = '';
+                otherProjects.forEach(p => {
+                    const isSel = (currentProjectFilter === p.name);
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = `w-full text-start px-3 py-2 flex items-center justify-between text-xs font-bold transition ${
+                        isSel ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60'
+                    }`;
+                    const pCount = todos.filter(t => !t.done && !t.archived && (t.tags || []).includes(p.name)).length;
+                    btn.innerHTML = `<span dir="auto" class="truncate">#${p.name}</span><span class="text-[10px] font-mono opacity-75">${pCount}</span>`;
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        currentProjectFilter = p.name;
+                        filterMoreProjectsMenu.classList.add('hidden');
+                        renderProjectsBar();
+                        renderUI();
+                    };
+                    filterMoreProjectsMenu.appendChild(btn);
+                });
+            }
+
+            // ۲. بخش فوتر (انتخاب تگ برای تسک جدید):
+            // نمایش ۴ تگ پرکاربرد + هر تگی که از منوی «سایر برچسب‌ها» انتخاب شده باشد!
             quickTagsContainer.innerHTML = '';
-            quickProjects.forEach(p => {
+            const footerVisibleTags = [...quickProjects];
+            otherProjects.forEach(op => {
+                if (selectedTagsForNewTask.has(op.name)) {
+                    footerVisibleTags.push(op);
+                }
+            });
+
+            footerVisibleTags.forEach(p => {
                 const isChosen = selectedTagsForNewTask.has(p.name);
                 const chip = document.createElement('button');
                 chip.type = 'button';
-                chip.className = `px-2.5 py-1 rounded-xl text-[11px] font-black transition active:scale-95 border ${
+                chip.dir = 'auto';
+                chip.className = `px-2.5 py-1 rounded-xl text-[11px] font-black transition active:scale-95 shrink-0 border flex items-center gap-1 ${
                     isChosen 
-                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' 
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs' 
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 border-slate-200 dark:border-slate-700'
                 }`;
-                chip.textContent = `#${p.name}`;
+                chip.innerHTML = `<span>#${p.name}</span>${p.timeTracking ? '<span class="text-[9px] opacity-80">⏱️</span>' : ''}`;
                 chip.onclick = () => toggleTagSelection(p.name);
                 quickTagsContainer.appendChild(chip);
             });
 
-            otherTagsSelect.innerHTML = `<option value="">${t('otherTagsOpt')}</option>`;
-            otherProjects.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.name;
-                opt.textContent = `#${p.name}`;
-                otherTagsSelect.appendChild(opt);
-            });
+            // ۳. منوی پاپ‌آپ «+ سایر برچسب‌ها» در فوتر
+            if (otherTagsDropdownMenu) {
+                otherTagsDropdownMenu.innerHTML = '';
+                if (otherProjects.length === 0) {
+                    otherTagsDropdownWrapper.classList.add('hidden');
+                } else {
+                    otherTagsDropdownWrapper.classList.remove('hidden');
+                    otherProjects.forEach(p => {
+                        const isChosen = selectedTagsForNewTask.has(p.name);
+                        const itemBtn = document.createElement('button');
+                        itemBtn.type = 'button';
+                        itemBtn.className = `w-full text-start px-3.5 py-2 flex items-center justify-between text-xs font-bold transition ${
+                            isChosen 
+                                ? 'bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300' 
+                                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60'
+                        }`;
+                        
+                        itemBtn.innerHTML = `
+                            <span dir="auto" class="truncate flex items-center gap-1">
+                                <span>#${p.name}</span>
+                                ${p.timeTracking ? '<span class="text-[10px]">⏱️</span>' : ''}
+                            </span>
+                            <span class="text-xs font-black ${isChosen ? 'text-indigo-600 dark:text-indigo-400' : 'opacity-0'}">✓</span>
+                        `;
+
+                        itemBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            toggleTagSelection(p.name);
+                        };
+
+                        otherTagsDropdownMenu.appendChild(itemBtn);
+                    });
+                }
+            }
+
+            updateHeaderProgressRing();
         }
 
-        otherTagsSelect.onchange = (e) => {
-            if (e.target.value) {
-                toggleTagSelection(e.target.value);
-                e.target.value = '';
-            }
-        };
-
-        // رندر کارت‌های تسک با استایل شیشه‌ای و کارت‌های لوکس
         function renderUI() {
             todoList.innerHTML = '';
+            updateHeaderProgressRing();
 
             let filtered = todos.filter(item => {
                 if (searchQuery) {
@@ -953,74 +1271,69 @@
             }
 
             visibleItems.forEach(item => {
+                const prio = item.priority || 'normal';
+                const prioBorder = prio === 'urgent' 
+                    ? 'border-s-4 border-s-rose-500' 
+                    : (prio === 'high' ? 'border-s-4 border-s-amber-500' : '');
+
                 const card = document.createElement('div');
-                card.className = `p-3.5 rounded-[22px] border transition-all duration-200 shadow-sm glass-card relative group ${
+                card.className = `task-card p-3.5 rounded-[22px] border transition-all shadow-xs bg-white/95 dark:bg-slate-800/95 relative group ${prioBorder} ${
                     item.done 
-                        ? 'border-slate-200/60 bg-slate-50/70 opacity-60' 
-                        : 'border-slate-200/90 hover:border-indigo-300 hover:shadow-md'
+                        ? 'border-slate-200/60 dark:border-slate-800 opacity-60' 
+                        : 'border-slate-200/90 dark:border-slate-700/80 hover:border-indigo-300 dark:hover:border-indigo-500/60 hover:shadow-md'
                 }`;
 
                 const topRow = document.createElement('div');
-                topRow.className = 'flex items-start justify-between gap-3';
+                topRow.className = 'flex items-start justify-between gap-2.5';
 
-                // بخش چک‌باکس و متن
                 const checkAndText = document.createElement('div');
                 checkAndText.className = 'flex items-start gap-3 flex-1 min-w-0';
 
-                // چک‌باکس با ظاهر دایره‌ای مدرن
-                const checkWrapper = document.createElement('label');
-                checkWrapper.className = 'relative flex items-center justify-center cursor-pointer mt-0.5 shrink-0';
-                
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.checked = item.done;
-                checkbox.className = 'sr-only task-checkbox';
-                checkbox.onchange = () => {
-                    item.done = checkbox.checked;
+                // چک‌باکس دایره‌ای مدرن
+                const checkBtn = document.createElement('button');
+                checkBtn.type = 'button';
+                checkBtn.className = `mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0 ${
+                    item.done 
+                        ? 'bg-indigo-600 border-indigo-600 text-white' 
+                        : 'border-slate-300 dark:border-slate-600 hover:border-indigo-500 bg-white dark:bg-slate-900'
+                }`;
+                checkBtn.innerHTML = item.done ? `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>` : '';
+                checkBtn.onclick = () => {
+                    item.done = !item.done;
                     saveLocalData();
                     renderProjectsBar();
                     renderUI();
                 };
 
-                const checkFace = document.createElement('div');
-                checkFace.className = `w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center checkbox-face ${
-                    item.done ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 hover:border-indigo-500 bg-white'
-                }`;
-                checkFace.innerHTML = `<svg class="w-3 h-3 text-white ${item.done ? 'block' : 'hidden'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>`;
-
-                checkWrapper.appendChild(checkbox);
-                checkWrapper.appendChild(checkFace);
-
                 const textBlock = document.createElement('div');
                 textBlock.className = 'flex-1 min-w-0';
 
                 const title = document.createElement('p');
-                title.className = `text-xs sm:text-sm font-semibold break-words leading-relaxed ${
-                    item.done ? 'line-through text-slate-400' : 'text-slate-800'
+                title.dir = 'auto';
+                title.className = `text-xs sm:text-sm font-bold break-words leading-relaxed ${
+                    item.done ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-100'
                 }`;
                 title.textContent = item.title;
                 textBlock.appendChild(title);
 
-                checkAndText.appendChild(checkWrapper);
+                checkAndText.appendChild(checkBtn);
                 checkAndText.appendChild(textBlock);
 
-                // دکمه‌های کنترلی تسک
+                // دکمه‌های عملیات تسک
                 const actions = document.createElement('div');
-                actions.className = 'flex items-center gap-1.5 shrink-0';
+                actions.className = 'flex items-center gap-1 shrink-0';
 
-                // دکمه پومودورو با پس‌زمینه لطیف قرمز
                 if (!item.done && !item.archived) {
                     const pomoBtn = document.createElement('button');
-                    pomoBtn.className = 'px-2 py-1 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 font-extrabold text-[11px] transition shadow-xs active:scale-95 flex items-center gap-1';
+                    pomoBtn.className = 'px-2 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 font-extrabold text-[10px] transition active:scale-95';
                     pomoBtn.innerHTML = t('pomoBtnText');
                     pomoBtn.onclick = () => startPomodoro(item);
                     actions.appendChild(pomoBtn);
                 }
 
-                // دکمه آرشیو / بازیابی
                 if (item.done || item.archived) {
                     const archBtn = document.createElement('button');
-                    archBtn.className = 'px-2 py-1 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 font-extrabold text-[11px] transition shadow-xs active:scale-95';
+                    archBtn.className = 'px-2 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 hover:bg-amber-100 font-extrabold text-[10px] transition active:scale-95';
                     archBtn.textContent = item.archived ? t('restoreBtn') : t('archiveBtn');
                     archBtn.onclick = () => {
                         item.archived = !item.archived;
@@ -1032,9 +1345,8 @@
                     actions.appendChild(archBtn);
                 }
 
-                // دکمه حذف ملایم
                 const delBtn = document.createElement('button');
-                delBtn.className = 'w-7 h-7 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition';
+                delBtn.className = 'w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition text-xs';
                 delBtn.innerHTML = '✕';
                 delBtn.onclick = () => {
                     todos = todos.filter(t => t.id !== item.id);
@@ -1048,45 +1360,65 @@
                 topRow.appendChild(actions);
                 card.appendChild(topRow);
 
-                // ردیف پایین: برچسب‌ها و متادیتای زمان
-                const bottomRow = document.createElement('div');
-                bottomRow.className = 'mt-2.5 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-1.5 text-[11px]';
+                // ردیف متادیتا و برچسب‌ها در پایین کارت
+                const hasTags = item.tags && item.tags.length > 0;
+                const hasTimeMeta = item.estMinutes || item.actualMinutes || item.dueDate;
 
-                const tagsWrapper = document.createElement('div');
-                tagsWrapper.className = 'flex flex-wrap gap-1.5 items-center';
-                (item.tags || []).forEach(tg => {
-                    const badge = document.createElement('span');
-                    badge.className = 'bg-indigo-50/80 hover:bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition border border-indigo-100/60 shadow-xs';
-                    badge.textContent = `#${tg}`;
-                    badge.title = t('tagFilterTooltip');
-                    badge.onclick = (e) => {
-                        e.stopPropagation();
-                        currentProjectFilter = tg;
-                        renderProjectsBar();
-                        renderUI();
-                    };
-                    tagsWrapper.appendChild(badge);
-                });
-                bottomRow.appendChild(tagsWrapper);
+                if (hasTags || hasTimeMeta || prio !== 'normal') {
+                    const bottomRow = document.createElement('div');
+                    bottomRow.className = 'mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-700/60 flex flex-wrap items-center justify-between gap-1.5 text-[11px]';
 
-                // زمان‌ها (تخمینی / واقعی / سررسید)
-                if (item.estMinutes || item.actualMinutes || item.dueDate) {
-                    const timeWrapper = document.createElement('div');
-                    timeWrapper.className = `flex items-center gap-1.5 text-[10px] text-slate-500 ${currentLang === 'fa' ? 'mr-auto' : 'ml-auto'}`;
-                    if (item.estMinutes) timeWrapper.innerHTML += `<span class="bg-slate-100 px-2 py-0.5 rounded-lg font-mono">${t('estPrefix')} ${item.estMinutes}${t('minUnit')}</span>`;
-                    if (item.actualMinutes) timeWrapper.innerHTML += `<span class="bg-emerald-50 text-emerald-700 font-black px-2 py-0.5 rounded-lg font-mono border border-emerald-200/50">${t('actPrefix')} ${item.actualMinutes}${t('minUnit')}</span>`;
-                    if (item.dueDate) timeWrapper.innerHTML += `<span class="text-rose-600 font-extrabold bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-100">📅 ${item.dueDate}</span>`;
-                    
-                    const editTimeBtn = document.createElement('button');
-                    editTimeBtn.className = 'text-indigo-600 hover:text-indigo-800 font-black px-1 rounded hover:underline';
-                    editTimeBtn.textContent = t('recordActualBtn');
-                    editTimeBtn.onclick = () => openActualTimeModal(item);
-                    timeWrapper.appendChild(editTimeBtn);
+                    const tagsWrapper = document.createElement('div');
+                    tagsWrapper.className = 'flex flex-wrap gap-1 items-center';
 
-                    bottomRow.appendChild(timeWrapper);
+                    // نشان اولویت در صورت مهم/فوری بودن
+                    if (prio === 'urgent') {
+                        const pBadge = document.createElement('span');
+                        pBadge.className = 'bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 px-1.5 py-0.5 rounded-md text-[9px] font-black';
+                        pBadge.textContent = `🔥 ${t('prioUrgent')}`;
+                        tagsWrapper.appendChild(pBadge);
+                    } else if (prio === 'high') {
+                        const pBadge = document.createElement('span');
+                        pBadge.className = 'bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded-md text-[9px] font-black';
+                        pBadge.textContent = `⚡ ${t('prioHigh')}`;
+                        tagsWrapper.appendChild(pBadge);
+                    }
+
+                    (item.tags || []).forEach(tg => {
+                        const badge = document.createElement('span');
+                        badge.dir = 'auto';
+                        badge.className = 'bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition border border-indigo-100 dark:border-indigo-800/50';
+                        badge.textContent = `#${tg}`;
+                        badge.title = t('tagFilterTooltip');
+                        badge.onclick = (e) => {
+                            e.stopPropagation();
+                            currentProjectFilter = tg;
+                            renderProjectsBar();
+                            renderUI();
+                        };
+                        tagsWrapper.appendChild(badge);
+                    });
+                    bottomRow.appendChild(tagsWrapper);
+
+                    if (hasTimeMeta) {
+                        const timeWrapper = document.createElement('div');
+                        timeWrapper.className = 'flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 ms-auto';
+                        if (item.estMinutes) timeWrapper.innerHTML += `<span class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-md font-mono">${t('estPrefix')} ${item.estMinutes}${t('minUnit')}</span>`;
+                        if (item.actualMinutes) timeWrapper.innerHTML += `<span class="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-black px-1.5 py-0.5 rounded-md font-mono">${t('actPrefix')} ${item.actualMinutes}${t('minUnit')}</span>`;
+                        if (item.dueDate) timeWrapper.innerHTML += `<span class="text-rose-600 dark:text-rose-400 font-extrabold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded-md">📅 ${item.dueDate}</span>`;
+                        
+                        const editTimeBtn = document.createElement('button');
+                        editTimeBtn.className = 'text-indigo-600 dark:text-indigo-400 hover:underline font-black px-1';
+                        editTimeBtn.textContent = t('recordActualBtn');
+                        editTimeBtn.onclick = () => openActualTimeModal(item);
+                        timeWrapper.appendChild(editTimeBtn);
+
+                        bottomRow.appendChild(timeWrapper);
+                    }
+
+                    card.appendChild(bottomRow);
                 }
 
-                card.appendChild(bottomRow);
                 todoList.appendChild(card);
             });
         }
@@ -1108,6 +1440,7 @@
                 title: text,
                 done: false,
                 archived: false,
+                priority: currentNewTaskPriority,
                 createdAt: new Date().toISOString(),
                 tags: Array.from(selectedTagsForNewTask),
                 estMinutes: taskEstMinutes.value ? parseInt(taskEstMinutes.value) : null,
@@ -1119,6 +1452,8 @@
             taskInput.value = '';
             taskEstMinutes.value = '';
             taskDueDate.value = '';
+            currentNewTaskPriority = 'normal';
+            updatePriorityButtonUI();
             selectedTagsForNewTask.clear();
             timeTrackingFields.classList.add('hidden');
 
@@ -1128,11 +1463,7 @@
             showNotification(t('taskSavedToast'));
         };
 
-        // سیستم تشخیص گفتار صوتی
         const SpeechRecognitionApi = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognizer = null;
-        let isRecordingVoice = false;
-
         if (SpeechRecognitionApi) {
             try {
                 recognizer = new SpeechRecognitionApi();
@@ -1142,8 +1473,7 @@
 
                 recognizer.onstart = () => {
                     isRecordingVoice = true;
-                    voiceInputBtn.classList.remove('bg-white', 'text-slate-700');
-                    voiceInputBtn.classList.add('bg-rose-600', 'text-white', 'ring-4', 'ring-rose-200', 'animate-pulse');
+                    voiceInputBtn.classList.add('bg-rose-600', 'text-white', 'ring-4', 'ring-rose-300', 'animate-pulse');
                     showNotification(t('listeningToast'));
                 };
 
@@ -1158,20 +1488,13 @@
                 };
 
                 recognizer.onerror = (err) => {
-                    console.warn("Speech error:", err.error);
-                    if (err.error === 'not-allowed') {
-                        showNotification(t('micPermissionToast'));
-                    } else if (err.error === 'no-speech') {
-                        showNotification(t('noSpeechToast'));
-                    } else {
-                        showNotification(`Mic error: ${err.error}`);
-                    }
+                    if (err.error === 'not-allowed') showNotification(t('micPermissionToast'));
+                    else if (err.error === 'no-speech') showNotification(t('noSpeechToast'));
                 };
 
                 recognizer.onend = () => {
                     isRecordingVoice = false;
-                    voiceInputBtn.classList.remove('bg-rose-600', 'text-white', 'ring-4', 'ring-rose-200', 'animate-pulse');
-                    voiceInputBtn.classList.add('bg-white', 'text-slate-700');
+                    voiceInputBtn.classList.remove('bg-rose-600', 'text-white', 'ring-4', 'ring-rose-300', 'animate-pulse');
                 };
 
                 voiceInputBtn.onclick = () => {
@@ -1191,11 +1514,9 @@
             } catch (err) {
                 console.error("Speech Init Error:", err);
             }
-        } else {
-            voiceInputBtn.classList.add('opacity-40', 'cursor-not-allowed');
-            voiceInputBtn.onclick = () => {
-                showNotification(t('micNotSupportedToast'));
-            };
+        } else if (voiceInputBtn) {
+            voiceInputBtn.classList.add('opacity-40');
+            voiceInputBtn.onclick = () => showNotification(t('micNotSupportedToast'));
         }
 
         function startPomodoro(task) {
@@ -1246,17 +1567,10 @@
             showNotification(`${spent} ${t('pomoSavedTimeToast')}`);
         };
 
-        function checkNotificationSupport() {
-            if ("Notification" in window && Notification.permission === "granted") {
-                notifyPermBtn.classList.add('text-emerald-600');
-            }
-        }
-
         notifyPermBtn.onclick = async () => {
             if (!("Notification" in window)) return showNotification(t('notifyNotSupported'));
             const res = await Notification.requestPermission();
             if (res === 'granted') {
-                checkNotificationSupport();
                 showNotification(t('notifyActivatedToast'));
             }
         };
@@ -1267,6 +1581,7 @@
             }
         }
 
+        // مدیریت کامل برچسب‌ها همراه با قابلیت تغییر زمان‌دار بودن هر برچسب
         openTagsManagerBtn.onclick = () => {
             renderManagerTagsList();
             tagsManagerModal.classList.remove('hidden');
@@ -1287,39 +1602,48 @@
 
             projects.forEach((p, idx) => {
                 const item = document.createElement('div');
-                item.className = 'flex items-center justify-between bg-slate-50 border border-slate-200/80 p-3 rounded-2xl text-xs hover:border-slate-300 transition shadow-xs';
+                item.className = 'flex items-center justify-between bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 p-2.5 rounded-2xl text-xs';
                 
                 const infoDiv = document.createElement('div');
                 infoDiv.className = 'flex items-center gap-2 flex-1 min-w-0';
                 
                 const tagNameSpan = document.createElement('span');
-                tagNameSpan.className = 'font-black text-slate-800 truncate';
+                tagNameSpan.dir = 'auto';
+                tagNameSpan.className = 'font-black text-slate-800 dark:text-slate-100 truncate';
                 tagNameSpan.textContent = `#${p.name}`;
                 infoDiv.appendChild(tagNameSpan);
 
-                if (p.timeTracking) {
-                    const badge = document.createElement('span');
-                    badge.className = 'text-[9px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md font-bold shrink-0';
-                    badge.textContent = t('tagTimedBadge');
-                    infoDiv.appendChild(badge);
-                }
+                // دکمه تغییر وضعیت زمان‌دار بودن برچسب
+                const toggleTimeBtn = document.createElement('button');
+                toggleTimeBtn.type = 'button';
+                toggleTimeBtn.className = `text-[10px] px-2 py-0.5 rounded-lg font-bold transition shrink-0 ${
+                    p.timeTracking 
+                        ? 'bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800' 
+                        : 'bg-slate-200/70 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                }`;
+                toggleTimeBtn.textContent = p.timeTracking ? t('tagTimedBadge') : t('tagSimpleBadge');
+                toggleTimeBtn.onclick = () => {
+                    p.timeTracking = !p.timeTracking;
+                    saveLocalData();
+                    renderManagerTagsList();
+                    updateTagFormUI();
+                };
+                infoDiv.appendChild(toggleTimeBtn);
 
                 const delBtn = document.createElement('button');
                 delBtn.type = 'button';
-                delBtn.className = 'text-rose-600 hover:text-rose-800 hover:bg-rose-50 px-2.5 py-1 rounded-xl text-xs font-black transition shrink-0';
+                delBtn.className = 'text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 px-2.5 py-1 rounded-xl text-xs font-black transition shrink-0';
                 delBtn.textContent = t('deleteBtn');
                 delBtn.onclick = () => {
                     const tagToRemove = p.name;
                     projects.splice(idx, 1);
-                    if (selectedTagsForNewTask.has(tagToRemove)) {
-                        selectedTagsForNewTask.delete(tagToRemove);
-                    }
+                    selectedTagsForNewTask.delete(tagToRemove);
                     if (currentProjectFilter === tagToRemove) {
                         currentProjectFilter = ALL_PROJECTS_TAB_KEY;
                     }
                     saveLocalData();
                     renderManagerTagsList();
-                    renderProjectsBar();
+                    updateTagFormUI();
                     renderUI();
                     showNotification(`#${tagToRemove} ${t('tagRemovedToast')}`);
                 };
@@ -1338,9 +1662,7 @@
                 const tracking = document.getElementById('manager-new-tag-tracking');
                 if (!input) return;
 
-                const rawVal = input.value.trim();
-                const cleanName = rawVal.replace(/^#+/, '').trim();
-
+                const cleanName = input.value.trim().replace(/^#+/, '').trim();
                 if (!cleanName) {
                     showNotification(t('enterTagNameToast'));
                     input.focus();
@@ -1354,18 +1676,19 @@
                     return;
                 }
 
-                const newTagObj = {
+                projects.push({
                     name: cleanName,
                     timeTracking: tracking ? tracking.checked : false
-                };
-
-                projects.push(newTagObj);
+                });
                 input.value = '';
                 if (tracking) tracking.checked = false;
 
+                // بلافاصله برچسب جدید را برای راحتی کاربر در فرم هم انتخاب کنیم
+                selectedTagsForNewTask.add(cleanName);
+
                 saveLocalData();
                 renderManagerTagsList();
-                renderProjectsBar();
+                updateTagFormUI();
                 renderUI();
                 showNotification(`#${cleanName} ${t('tagAddedToast')}`);
                 input.focus();
@@ -1402,6 +1725,7 @@
         };
 
         openReportsBtn.onclick = () => {
+            headerMenuDropdown.classList.add('hidden');
             renderReports();
             reportsModal.classList.remove('hidden');
         };
@@ -1440,13 +1764,14 @@
             });
         }
 
+        // کنترل تب‌های فیلتر وضعیت
         document.querySelectorAll('.filter-tab').forEach(btn => {
             btn.onclick = () => {
                 document.querySelectorAll('.filter-tab').forEach(b => {
-                    b.classList.remove('bg-white', 'text-indigo-600', 'shadow-sm');
+                    b.classList.remove('bg-white', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400', 'shadow-xs');
                     b.classList.add('text-slate-500');
                 });
-                btn.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+                btn.classList.add('bg-white', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400', 'shadow-xs');
                 btn.classList.remove('text-slate-500');
                 currentFilter = btn.dataset.filter;
                 const arcRow = document.getElementById('archive-filter-row');
@@ -1455,9 +1780,26 @@
                 renderUI();
             };
         });
-        document.querySelector('[data-filter="all"]').classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+        document.querySelector('[data-filter="all"]').classList.add('bg-white', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400', 'shadow-xs');
 
-        searchInput.oninput = (e) => { searchQuery = e.target.value.toLowerCase().trim(); renderUI(); };
+        searchInput.oninput = (e) => {
+            searchQuery = e.target.value.toLowerCase().trim();
+            if (clearSearchBtn) {
+                if (searchQuery) clearSearchBtn.classList.remove('hidden');
+                else clearSearchBtn.classList.add('hidden');
+            }
+            renderUI();
+        };
+
+        if (clearSearchBtn) {
+            clearSearchBtn.onclick = () => {
+                searchInput.value = '';
+                searchQuery = '';
+                clearSearchBtn.classList.add('hidden');
+                renderUI();
+            };
+        }
+
         document.getElementById('archive-date-from').onchange = (e) => { archiveDateFrom = e.target.value; renderUI(); };
         document.getElementById('archive-date-to').onchange = (e) => { archiveDateTo = e.target.value; renderUI(); };
         document.getElementById('clear-archive-filter-btn').onclick = () => {
@@ -1484,7 +1826,7 @@
                         projects = data.projects;
                         localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
                     }
-                    renderProjectsBar();
+                    updateTagFormUI();
                     renderUI();
                     updateSyncUI(true, t('syncOnline'));
                 }
@@ -1494,7 +1836,10 @@
             });
         }
 
-        authActionBtn.onclick = () => userModal.classList.remove('hidden');
+        authActionBtn.onclick = () => {
+            headerMenuDropdown.classList.add('hidden');
+            userModal.classList.remove('hidden');
+        };
         if (userAvatarBtn) {
             userAvatarBtn.onclick = () => userModal.classList.remove('hidden');
         }
@@ -1566,7 +1911,8 @@
             console.error("Firebase init error:", e);
         }
 
-        checkNotificationSupport();
+        // راه‌اندازی اولیه تم و زبان
+        applyTheme(currentTheme);
         applyLanguage(currentLang);
     </script>
 </body>
