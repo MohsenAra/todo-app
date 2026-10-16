@@ -72,16 +72,18 @@
         <header class="glass-header text-white p-4 shadow-lg sticky top-0 z-30 transition-all border-b border-indigo-400/20">
             <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center shadow-inner border border-white/20 text-lg">
-                        ✨
-                    </div>
+                    <!-- آواتار یا تصویر پروفایل کاربر به جای آیکون اپلیکیشن -->
+                    <button id="user-avatar-btn" title="حساب کاربری / User Profile" class="relative group cursor-pointer focus:outline-none">
+                        <img id="header-user-avatar" src="https://placehold.co/100x100/4f46e5/white?text=U" alt="User Profile" class="w-10 h-10 rounded-2xl object-cover ring-2 ring-white/30 shadow-md transition group-active:scale-95 group-hover:ring-white/60">
+                        <span id="sync-status-dot" class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-indigo-900 shadow-[0_0_8px_rgba(52,211,153,0.9)] transition-all"></span>
+                    </button>
                     <div>
                         <h1 class="text-base sm:text-lg font-black tracking-tight flex items-center gap-2 drop-shadow-sm">
                             <span id="app-title-text" data-i18n="appTitle">کارهای روزمره من</span>
                         </h1>
+                        <!-- متن وضعیت همگام‌سازی که پس از چند ثانیه نرم محو می‌شود -->
                         <div class="flex items-center gap-1.5 mt-0.5 text-[11px] text-indigo-100 font-medium">
-                            <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
-                            <span id="sync-status-text" class="truncate max-w-[130px]" data-i18n="syncOnline">همگام با سرور</span>
+                            <span id="sync-status-text" class="truncate max-w-[150px] transition-all duration-500 opacity-100" data-i18n="syncOnline">همگام با سرور</span>
                         </div>
                     </div>
                 </div>
@@ -103,18 +105,18 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
                         </button>
 
-                        <!-- دراپ‌داون شیشه‌ای با افکت کارت شناور -->
-                        <div id="header-menu-dropdown" class="hidden absolute left-0 mt-2 w-48 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 py-1.5 z-40 text-slate-700 animate-in fade-in zoom-in-95 duration-150">
-                            <button id="open-reports-btn" class="w-full px-3.5 py-2 text-right text-xs font-semibold hover:bg-indigo-50 flex items-center gap-2.5 transition">
+                        <!-- دراپ‌داون شیشه‌ای با موقعیت هوشمند برای زبان‌های مختلف -->
+                        <div id="header-menu-dropdown" class="hidden absolute start-0 mt-2 w-48 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 py-1.5 z-40 text-slate-700 animate-in fade-in zoom-in-95 duration-150">
+                            <button id="open-reports-btn" class="w-full px-3.5 py-2 text-start text-xs font-semibold hover:bg-indigo-50 flex items-center gap-2.5 transition">
                                 <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs">📊</span>
                                 <span data-i18n="reportBtn">گزارش و نمودارها</span>
                             </button>
-                            <button id="notify-perm-btn" class="w-full px-3.5 py-2 text-right text-xs font-semibold hover:bg-indigo-50 flex items-center gap-2.5 transition">
+                            <button id="notify-perm-btn" class="w-full px-3.5 py-2 text-start text-xs font-semibold hover:bg-indigo-50 flex items-center gap-2.5 transition">
                                 <span class="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-xs">🔔</span>
                                 <span data-i18n="notifyBtn">اعلان یادآوری</span>
                             </button>
                             <div class="my-1 border-t border-slate-100"></div>
-                            <button id="auth-action-btn" class="w-full px-3.5 py-2 text-right text-xs font-bold text-indigo-600 hover:bg-indigo-50 flex items-center gap-2.5 transition">
+                            <button id="auth-action-btn" class="w-full px-3.5 py-2 text-start text-xs font-bold text-indigo-600 hover:bg-indigo-50 flex items-center gap-2.5 transition">
                                 <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs">👤</span>
                                 <span id="auth-btn-label" data-i18n="loginBtn">ورود و سینک</span>
                             </button>
@@ -285,7 +287,7 @@
                     <span class="text-slate-500 font-bold">همگام‌سازی ابری</span>
                 </div>
                 <div class="flex items-center gap-1 bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-mono text-[9px] border border-slate-200/60 font-bold">
-                    <span>v1.7.0</span>
+                    <span>v1.8.0</span>
                 </div>
             </div>
         </footer>
@@ -657,6 +659,7 @@
         let pomodoroRemainingSeconds = 25 * 60;
         let pomodoroTimerInterval = null;
         let pomodoroIsPaused = false;
+        let syncTextTimeout = null;
 
         const todoList = document.getElementById('todo-list');
         const emptyState = document.getElementById('empty-state');
@@ -668,6 +671,8 @@
         const toastMsg = document.getElementById('toast-msg');
         const syncStatusDot = document.getElementById('sync-status-dot');
         const syncStatusText = document.getElementById('sync-status-text');
+        const headerUserAvatar = document.getElementById('header-user-avatar');
+        const userAvatarBtn = document.getElementById('user-avatar-btn');
         const authActionBtn = document.getElementById('auth-action-btn');
         const authBtnLabel = document.getElementById('auth-btn-label');
         const projectsBar = document.getElementById('projects-bar');
@@ -678,43 +683,49 @@
         const taskEstMinutes = document.getElementById('task-est-minutes');
         const taskDueDate = document.getElementById('task-due-date');
         const langToggleBtn = document.getElementById('lang-toggle-btn');
+        function applyLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem(LANG_STORAGE_KEY, lang);
+            document.documentElement.lang = lang;
+            document.documentElement.dir = (lang === 'fa') ? 'rtl' : 'ltr';
 
-        const headerMenuBtn = document.getElementById('header-menu-btn');
-        const headerMenuDropdown = document.getElementById('header-menu-dropdown');
+            const langToggleBtn = document.getElementById('lang-toggle-btn');
+            if (langToggleBtn) {
+                langToggleBtn.textContent = lang === 'fa' ? 'EN' : 'فا';
+            }
 
-        const reportsModal = document.getElementById('reports-modal');
-        const openReportsBtn = document.getElementById('open-reports-btn');
-        const closeReportsBtn = document.getElementById('close-reports-btn');
-        const tagsManagerModal = document.getElementById('tags-manager-modal');
-        const openTagsManagerBtn = document.getElementById('open-tags-manager-btn');
-        const closeTagsManagerBtn = document.getElementById('close-tags-manager-btn');
-        const actualTimeModal = document.getElementById('actual-time-modal');
-        const userModal = document.getElementById('user-modal');
-        const closeUserModalBtn = document.getElementById('close-user-modal-btn');
-        const loggedInSection = document.getElementById('logged-in-section');
-        const loginOptionsSection = document.getElementById('login-options-section');
-        const googleLoginBtn = document.getElementById('google-login-btn');
-        const keySyncForm = document.getElementById('key-sync-form');
-        const customSyncKeyInput = document.getElementById('custom-sync-key');
-        const disconnectBtn = document.getElementById('disconnect-btn');
+            // تنظیم موقعیت دراپ‌داون متناسب با LTR و RTL تا از کادر بیرون نزند
+            const headerDropdown = document.getElementById('header-menu-dropdown');
+            if (headerDropdown) {
+                if (lang === 'fa') {
+                    headerDropdown.classList.remove('right-0');
+                    headerDropdown.classList.add('left-0');
+                } else {
+                    headerDropdown.classList.remove('left-0');
+                    headerDropdown.classList.add('right-0');
+                }
+            }
 
-        const pomodoroBar = document.getElementById('pomodoro-bar');
-        const pomoTaskName = document.getElementById('pomo-task-name');
-        const pomoTimerDisplay = document.getElementById('pomo-timer-display');
-        const pomoPauseBtn = document.getElementById('pomo-pause-btn');
-        const pomoStopBtn = document.getElementById('pomo-stop-btn');
-        const voiceInputBtn = document.getElementById('voice-input-btn');
-        const notifyPermBtn = document.getElementById('notify-perm-btn');
-
-        // منوی کشویی هدر
-        if (headerMenuBtn && headerMenuDropdown) {
-            headerMenuBtn.onclick = (e) => {
-                e.stopPropagation();
-                headerMenuDropdown.classList.toggle('hidden');
-            };
-            document.addEventListener('click', () => {
-                headerMenuDropdown.classList.add('hidden');
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const k = el.getAttribute('data-i18n');
+                if (k && i18n[lang][k]) {
+                    el.textContent = i18n[lang][k];
+                }
             });
+
+            document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+                const k = el.getAttribute('data-i18n-ph');
+                if (k && i18n[lang][k]) {
+                    el.placeholder = i18n[lang][k];
+                }
+            });
+
+            if (recognizer) {
+                recognizer.lang = (lang === 'fa') ? 'fa-IR' : 'en-US';
+            }
+
+            renderProjectsBar();
+            renderUI();
         }
 
         // دکمه باز و بسته کردن سرچ
@@ -766,118 +777,21 @@
         }
 
         function updateSyncUI(isOnline, text) {
-            syncStatusDot.className = `w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]'}`;
-            syncStatusText.textContent = text;
-        }
+            syncStatusDot.className = `absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ${
+                isOnline 
+                    ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]' 
+                    : 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.9)]'
+            } ring-2 ring-indigo-900 transition-all`;
 
-        function listenToCloud(syncId) {
-            if (cloudUnsubscribe) cloudUnsubscribe();
-            if (!db || !syncId) return;
-
-            const userDocRef = doc(db, 'users', syncId);
-            cloudUnsubscribe = onSnapshot(userDocRef, (snap) => {
-                if (snap.exists()) {
-                    const data = snap.data();
-                    if (data.todos) todos = data.todos;
-                    if (data.projects) projects = data.projects;
-                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
-                    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
-                    renderProjectsBar();
-                    renderUI();
-                    updateSyncUI(true, t('syncOnline'));
-                }
-            }, (error) => {
-                console.error("Cloud listener error:", error);
-                updateSyncUI(false, t('syncError'));
-            });
-        }
-
-        function getTopTags() {
-            const counts = {};
-            todos.forEach(t => {
-                (t.tags || []).forEach(tg => { counts[tg] = (counts[tg] || 0) + 1; });
-            });
-            return [...projects].sort((a, b) => (counts[b.name] || 0) - (counts[a.name] || 0));
-        }
-
-        function renderProjectsBar() {
-            projectsBar.innerHTML = '';
-            const allBtn = document.createElement('button');
-            const isActive = currentProjectFilter === ALL_PROJECTS_TAB_KEY;
-            allBtn.className = `px-3 py-1 rounded-full font-black shrink-0 transition active:scale-95 text-xs flex items-center gap-1.5 shadow-sm ${
-                isActive 
-                    ? 'bg-indigo-600 text-white shadow-indigo-200' 
-                    : 'bg-white/90 text-slate-600 border border-slate-200/80 hover:bg-slate-50'
-            }`;
-            allBtn.innerHTML = `<span>${t('allTasksTab')}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? 'bg-indigo-800/60 text-white' : 'bg-slate-100 text-slate-500'}">${todos.filter(t => !t.archived && !t.done).length}</span>`;
-            allBtn.onclick = () => { currentProjectFilter = ALL_PROJECTS_TAB_KEY; renderProjectsBar(); renderUI(); };
-            projectsBar.appendChild(allBtn);
-
-            projects.forEach(p => {
-                const count = todos.filter(t => !t.archived && !t.done && (t.tags || []).includes(p.name)).length;
-                const btn = document.createElement('button');
-                const isSelected = currentProjectFilter === p.name;
-                btn.className = `px-3 py-1 rounded-full font-black shrink-0 transition active:scale-95 text-xs flex items-center gap-1.5 shadow-sm ${
-                    isSelected 
-                        ? 'bg-indigo-600 text-white shadow-indigo-200' 
-                        : 'bg-white/90 text-slate-600 border border-slate-200/80 hover:bg-slate-50'
-                }`;
-                btn.innerHTML = `<span>#${p.name}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-indigo-800/60 text-white' : 'bg-slate-100 text-slate-500'}">${count}</span>`;
-                btn.onclick = () => { currentProjectFilter = p.name; renderProjectsBar(); renderUI(); };
-                projectsBar.appendChild(btn);
-            });
-
-            // فرم پایینی
-            const sortedProjects = getTopTags();
-            const topProjects = sortedProjects.slice(0, 3);
-            const remainingProjects = sortedProjects.slice(3);
-
-            quickTagsContainer.innerHTML = '';
-            topProjects.forEach(p => {
-                const isSelected = selectedTagsForNewTask.has(p.name);
-                const chip = document.createElement('button');
-                chip.type = 'button';
-                chip.className = `px-2.5 py-1 rounded-xl text-[11px] font-extrabold border transition shadow-sm active:scale-95 ${
-                    isSelected ? 'bg-indigo-600 text-white border-indigo-600 shadow-indigo-200' : 'bg-slate-100/90 text-slate-600 border-slate-200 hover:bg-slate-200/70'
-                }`;
-                chip.textContent = `#${p.name}`;
-                chip.onclick = () => toggleTagSelection(p.name);
-                quickTagsContainer.appendChild(chip);
-            });
-
-            otherTagsSelect.innerHTML = `<option value="">${t('otherTagsOpt')}</option>`;
-            remainingProjects.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.name;
-                opt.textContent = `#${p.name}`;
-                otherTagsSelect.appendChild(opt);
-            });
-
-            updateTagSelectionSummary();
-        }
-
-        function toggleTagSelection(name) {
-            if (selectedTagsForNewTask.has(name)) selectedTagsForNewTask.delete(name);
-            else selectedTagsForNewTask.add(name);
-            renderProjectsBar();
-            checkTimeTrackingVisibility();
-        }
-
-        function checkTimeTrackingVisibility() {
-            let needsTracking = false;
-            selectedTagsForNewTask.forEach(tName => {
-                const pr = projects.find(p => p.name === tName);
-                if (pr && pr.timeTracking) needsTracking = true;
-            });
-            if (needsTracking) timeTrackingFields.classList.remove('hidden');
-            else timeTrackingFields.classList.add('hidden');
-        }
-
-        function updateTagSelectionSummary() {
-            if (selectedTagsForNewTask.size === 0) {
-                selectedTagsSummary.textContent = t('noTagSelected');
-            } else {
-                selectedTagsSummary.textContent = Array.from(selectedTagsForNewTask).map(tg => `#${tg}`).join(' ');
+            if (syncStatusText) {
+                syncStatusText.textContent = text;
+                syncStatusText.style.opacity = '1';
+                
+                if (syncTextTimeout) clearTimeout(syncTextTimeout);
+                // متن پس از ۲.۵ ثانیه به نرمی محو می‌شود و فقط چراغ سبز باقی می‌ماند
+                syncTextTimeout = setTimeout(() => {
+                    syncStatusText.style.opacity = '0';
+                }, 2500);
             }
         }
 
@@ -1273,7 +1187,7 @@
                 delBtn.textContent = t('deleteBtn');
                 delBtn.onclick = () => {
                     const tagToRemove = p.name;
-                    projects = projects.filter((_, i) => i !== idx);
+                    projects.splice(idx, 1);
                     if (selectedTagsForNewTask.has(tagToRemove)) {
                         selectedTagsForNewTask.delete(tagToRemove);
                     }
@@ -1329,6 +1243,7 @@
                 saveLocalData();
                 renderManagerTagsList();
                 renderProjectsBar();
+                renderUI();
                 showNotification(`#${cleanName} ${t('tagAddedToast')}`);
                 input.focus();
             };
@@ -1431,6 +1346,9 @@
         };
 
         authActionBtn.onclick = () => userModal.classList.remove('hidden');
+        if (userAvatarBtn) {
+            userAvatarBtn.onclick = () => userModal.classList.remove('hidden');
+        }
         closeUserModalBtn.onclick = () => userModal.classList.add('hidden');
 
         try {
@@ -1445,15 +1363,20 @@
                     authBtnLabel.textContent = user.displayName || 'User';
                     document.getElementById('modal-user-name').textContent = user.displayName || 'User';
                     document.getElementById('modal-user-email').textContent = user.email || '';
-                    document.getElementById('modal-user-avatar').src = user.photoURL || 'https://placehold.co/100x100/4f46e5/white?text=User';
+                    const photo = user.photoURL || 'https://placehold.co/100x100/4f46e5/white?text=' + encodeURIComponent((user.displayName || 'U').charAt(0));
+                    document.getElementById('modal-user-avatar').src = photo;
+                    if (headerUserAvatar) headerUserAvatar.src = photo;
+
                     loggedInSection.classList.remove('hidden');
                     loginOptionsSection.classList.add('hidden');
                     listenToCloud(user.uid);
                 } else if (activeSyncId) {
                     authBtnLabel.textContent = t('connectedBtn');
+                    if (headerUserAvatar) headerUserAvatar.src = 'https://placehold.co/100x100/4f46e5/white?text=' + encodeURIComponent(activeSyncId.charAt(0).toUpperCase());
                     listenToCloud(activeSyncId);
                 } else {
                     authBtnLabel.textContent = t('loginBtn');
+                    if (headerUserAvatar) headerUserAvatar.src = 'https://placehold.co/100x100/4f46e5/white?text=U';
                     updateSyncUI(true, t('syncOffline'));
                 }
             });
