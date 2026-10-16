@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-<head>ش
-    <meta charset="UTF-8">
+<head>ش    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>مدیریت هوشمند کارها و پروژه‌ها</title>
     <!-- بارگذاری کتابخانه Tailwind CSS -->
@@ -74,11 +73,35 @@
                 </div>
             </div>
 
-            <!-- تب‌های فیلتر انجام شده / ناتمام -->
-            <div class="flex items-center gap-2 mt-3 pt-2.5 border-t border-indigo-500/40 text-xs">
-                <button data-filter="all" class="filter-tab px-3 py-1 rounded-full font-bold bg-white text-indigo-700 shadow-sm transition">همه</button>
-                <button data-filter="active" class="filter-tab px-3 py-1 rounded-full font-medium text-indigo-100 hover:text-white transition">ناتمام</button>
-                <button data-filter="completed" class="filter-tab px-3 py-1 rounded-full font-medium text-indigo-100 hover:text-white transition">انجام‌شده</button>
+            <!-- نوار جستجو در کل کارها -->
+            <div class="mt-3 relative">
+                <input 
+                    type="text" 
+                    id="global-search-input" 
+                    placeholder="جستجو در متن یا برچسب‌ها..." 
+                    class="w-full bg-indigo-700/50 text-white placeholder-indigo-200 text-xs rounded-xl pr-8 pl-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-white border border-indigo-500/50 transition"
+                >
+                <svg class="w-4 h-4 text-indigo-200 absolute right-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+
+            <!-- تب‌های فیلتر انجام شده / ناتمام / آرشیو -->
+            <div class="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-indigo-500/40 text-xs overflow-x-auto no-scrollbar">
+                <button data-filter="all" class="filter-tab px-3 py-1 rounded-full font-bold bg-white text-indigo-700 shadow-sm transition whitespace-nowrap">همه</button>
+                <button data-filter="active" class="filter-tab px-3 py-1 rounded-full font-medium text-indigo-100 hover:text-white transition whitespace-nowrap">ناتمام</button>
+                <button data-filter="completed" class="filter-tab px-3 py-1 rounded-full font-medium text-indigo-100 hover:text-white transition whitespace-nowrap">انجام‌شده</button>
+                <button data-filter="archived" class="filter-tab px-3 py-1 rounded-full font-medium text-indigo-100 hover:text-white transition flex items-center gap-1 whitespace-nowrap">
+                    <span>📦 آرشیو</span>
+                    <span id="archived-counter-badge" class="bg-indigo-800 text-[10px] px-1.5 py-0.2 rounded-full hidden">0</span>
+                </button>
+            </div>
+
+            <!-- فیلتر تاریخ اختصاصی بخش آرشیو (به صورت پیش‌فرض مخفی) -->
+            <div id="archive-date-filter" class="hidden items-center gap-2 mt-2 pt-2 border-t border-indigo-500/40 text-[11px] text-white flex-wrap">
+                <span>فیلتر تاریخ:</span>
+                <input type="date" id="archive-date-from" class="bg-indigo-700/80 text-white rounded-lg px-2 py-0.5 text-[11px] focus:outline-none border border-indigo-400/40">
+                <span>تا</span>
+                <input type="date" id="archive-date-to" class="bg-indigo-700/80 text-white rounded-lg px-2 py-0.5 text-[11px] focus:outline-none border border-indigo-400/40">
+                <button id="clear-archive-date-filter" class="text-indigo-200 hover:text-white text-[10px] underline ml-auto">پاک‌کردن فیلتر</button>
             </div>
         </header>
 
@@ -99,7 +122,7 @@
         <div id="toast-msg" class="fixed top-4 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white text-xs px-4 py-2 rounded-2xl shadow-xl z-50 pointer-events-none transition-opacity duration-300 opacity-0"></div>
 
         <!-- محتوای اصلی و لیست کارها -->
-        <section class="flex-1 p-4 overflow-y-auto no-scrollbar space-y-2.5">
+        <section id="tasks-scroll-container" class="flex-1 p-4 overflow-y-auto no-scrollbar space-y-2.5">
             <!-- بنر ورود به ابر برای مواقعی که کاربر هنوز وارد نشده -->
             <div id="login-banner" class="p-3.5 bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-2xl text-xs space-y-2 mb-2">
                 <div class="flex items-center justify-between">
@@ -115,8 +138,28 @@
                 </p>
             </div>
 
+            <!-- نوار اعلان حالت آرشیو -->
+            <div id="archive-banner" class="hidden p-2.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-xs items-center justify-between">
+                <div class="flex items-center gap-1.5 font-bold">
+                    <span>📦 بخش کارهای آرشیو‌شده</span>
+                </div>
+                <span id="archive-loaded-count" class="text-[11px] text-amber-700"></span>
+            </div>
+
             <!-- کانتینر تسک‌ها -->
             <div id="todo-list" class="space-y-2"></div>
+
+            <!-- اندیکاتور اسکرول تنبل (Lazy Load Spinner) -->
+            <div id="lazy-loading-sentinel" class="py-2 text-center text-xs text-slate-400 hidden">
+                <span class="animate-pulse">در حال بارگذاری موارد بیشتر...</span>
+            </div>
+
+            <!-- دکمه بارگذاری دستی موارد بیشتر -->
+            <div id="load-more-btn-container" class="text-center pt-2 pb-1 hidden">
+                <button id="load-more-btn" class="px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition shadow-sm">
+                    نمایش موارد بیشتر
+                </button>
+            </div>
 
             <!-- حالت خالی بودن لیست -->
             <div id="empty-state" class="hidden py-16 text-center text-slate-400">
@@ -382,6 +425,12 @@
         let selectedTagsForNewTask = new Set();
         let currentFilter = 'all';
         let currentProjectFilter = ALL_PROJECTS_TAB;
+        let searchQuery = '';
+        let archiveDateFrom = null;
+        let archiveDateTo = null;
+        let displayLimit = 20; // محدودیت رندر اولیه برای لود تنبل
+        const PAGE_STEP = 20;
+
         let selectedProjectForManage = null;
         let selectedTaskForActualTime = null;
         let db = null;
@@ -394,6 +443,7 @@
         // المان‌های DOM
         const todoList = document.getElementById('todo-list');
         const emptyState = document.getElementById('empty-state');
+        const tasksScrollContainer = document.getElementById('tasks-scroll-container');
         const addForm = document.getElementById('add-form');
         const taskInput = document.getElementById('task-input');
         const filterButtons = document.querySelectorAll('.filter-tab');
@@ -426,6 +476,19 @@
         const timeTrackingFields = document.getElementById('time-tracking-fields');
         const taskEstMinutes = document.getElementById('task-est-minutes');
         const taskDueDate = document.getElementById('task-due-date');
+
+        // المان‌های سرچ و آرشیو و بارگذاری تنبل
+        const globalSearchInput = document.getElementById('global-search-input');
+        const archiveDateFilter = document.getElementById('archive-date-filter');
+        const archiveDateFromInput = document.getElementById('archive-date-from');
+        const archiveDateToInput = document.getElementById('archive-date-to');
+        const clearArchiveDateFilter = document.getElementById('clear-archive-date-filter');
+        const archivedCounterBadge = document.getElementById('archived-counter-badge');
+        const archiveBanner = document.getElementById('archive-banner');
+        const archiveLoadedCount = document.getElementById('archive-loaded-count');
+        const loadMoreBtnContainer = document.getElementById('load-more-btn-container');
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        const lazyLoadingSentinel = document.getElementById('lazy-loading-sentinel');
 
         // المان‌های مودال مدیریت جامع برچسب‌ها
         const openTagsManagerBtn = document.getElementById('open-tags-manager-btn');
@@ -487,6 +550,9 @@
                     id: item.id || Date.now().toString(),
                     title: item.title || '',
                     done: !!item.done,
+                    archived: !!item.archived,
+                    archivedAt: item.archivedAt || null,
+                    createdAt: item.createdAt || (item.date || new Date().toISOString().slice(0, 10)),
                     date: item.date || '',
                     projects: tags,
                     estimatedMinutes: item.estimatedMinutes ? Number(item.estimatedMinutes) : null,
@@ -1111,28 +1177,135 @@
         googleLoginBtn.onclick = handleGoogleLogin;
         disconnectBtn.onclick = handleDisconnect;
 
-        function renderUI() {
-            todoList.innerHTML = '';
-            const filtered = todos.filter(t => {
-                if (currentFilter === 'active' && t.done) return false;
-                if (currentFilter === 'completed' && !t.done) return false;
+        // شنونده سرچ زنده
+        globalSearchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim().toLowerCase();
+            displayLimit = PAGE_STEP;
+            renderUI();
+        });
 
+        // شنونده فیلتر تاریخ آرشیو
+        archiveDateFromInput.addEventListener('change', (e) => {
+            archiveDateFrom = e.target.value || null;
+            displayLimit = PAGE_STEP;
+            renderUI();
+        });
+
+        archiveDateToInput.addEventListener('change', (e) => {
+            archiveDateTo = e.target.value || null;
+            displayLimit = PAGE_STEP;
+            renderUI();
+        });
+
+        clearArchiveDateFilter.addEventListener('click', () => {
+            archiveDateFromInput.value = '';
+            archiveDateToInput.value = '';
+            archiveDateFrom = null;
+            archiveDateTo = null;
+            displayLimit = PAGE_STEP;
+            renderUI();
+        });
+
+        // لود دستی کارهای بیشتر (Lazy load)
+        loadMoreBtn.addEventListener('click', () => {
+            displayLimit += PAGE_STEP;
+            renderUI();
+        });
+
+        // لود تنبل اتوماتیک هنگام اسکرول به انتهای لیست
+        tasksScrollContainer.addEventListener('scroll', () => {
+            const nearBottom = tasksScrollContainer.scrollTop + tasksScrollContainer.clientHeight >= tasksScrollContainer.scrollHeight - 60;
+            if (nearBottom) {
+                const totalMatching = getFilteredTodos().length;
+                if (displayLimit < totalMatching) {
+                    displayLimit += PAGE_STEP;
+                    renderUI();
+                }
+            }
+        });
+
+        function getFilteredTodos() {
+            return todos.filter(t => {
+                // فیلتر بر اساس تب اصلی
+                if (currentFilter === 'archived') {
+                    if (!t.archived) return false;
+                } else {
+                    // در تب‌های عادی (همه، ناتمام، انجام‌شده)، کارهای آرشیو شده مخفی هستند
+                    if (t.archived) return false;
+
+                    if (currentFilter === 'active' && t.done) return false;
+                    if (currentFilter === 'completed' && !t.done) return false;
+                }
+
+                // فیلتر بر اساس پروژه/برچسب انتخاب شده
                 if (currentProjectFilter !== ALL_PROJECTS_TAB) {
                     if (!Array.isArray(t.projects) || !t.projects.includes(currentProjectFilter)) return false;
                 }
 
+                // فیلتر جستجوی متنی (در عنوان یا برچسب‌ها)
+                if (searchQuery) {
+                    const matchTitle = t.title.toLowerCase().includes(searchQuery);
+                    const matchTags = Array.isArray(t.projects) && t.projects.some(tag => tag.toLowerCase().includes(searchQuery));
+                    if (!matchTitle && !matchTags) return false;
+                }
+
+                // فیلتر بازه تاریخ در آرشیو
+                if (currentFilter === 'archived') {
+                    const targetDate = t.archivedAt ? t.archivedAt.slice(0, 10) : (t.dueDate || (typeof t.createdAt === 'string' ? t.createdAt.slice(0, 10) : ''));
+                    if (archiveDateFrom && targetDate && targetDate < archiveDateFrom) return false;
+                    if (archiveDateTo && targetDate && targetDate > archiveDateTo) return false;
+                }
+
                 return true;
             });
+        }
 
-            if (filtered.length === 0) {
+        function renderUI() {
+            todoList.innerHTML = '';
+
+            // به‌روزرسانی شمارنده کارهای آرشیو
+            const archiveCount = todos.filter(t => t.archived).length;
+            if (archiveCount > 0) {
+                archivedCounterBadge.textContent = archiveCount;
+                archivedCounterBadge.classList.remove('hidden');
+            } else {
+                archivedCounterBadge.classList.add('hidden');
+            }
+
+            // نمایش یا مخفی‌سازی ابزارهای آرشیو
+            if (currentFilter === 'archived') {
+                archiveDateFilter.classList.remove('hidden');
+                archiveDateFilter.classList.add('flex');
+                archiveBanner.classList.remove('hidden');
+                archiveBanner.classList.add('flex');
+            } else {
+                archiveDateFilter.classList.add('hidden');
+                archiveDateFilter.classList.remove('flex');
+                archiveBanner.classList.add('hidden');
+                archiveBanner.classList.remove('flex');
+            }
+
+            const allFiltered = getFilteredTodos();
+            const totalCount = allFiltered.length;
+
+            if (currentFilter === 'archived') {
+                archiveLoadedCount.textContent = `نمایش ${Math.min(displayLimit, totalCount)} از ${totalCount} کار`;
+            }
+
+            // برش داده‌ها بر اساس محدودیت بارگذاری تنبل
+            const visibleTodos = allFiltered.slice(0, displayLimit);
+
+            if (totalCount === 0) {
                 emptyState.classList.remove('hidden');
             } else {
                 emptyState.classList.add('hidden');
             }
 
-            filtered.forEach(item => {
+            visibleTodos.forEach(item => {
                 const card = document.createElement('div');
-                card.className = `flex flex-col p-3 bg-white border border-slate-200 rounded-2xl transition shadow-sm space-y-2 ${item.done ? 'bg-slate-50/80 opacity-60' : 'hover:border-slate-300'}`;
+                card.className = `flex flex-col p-3 bg-white border border-slate-200 rounded-2xl transition shadow-sm space-y-2 ${
+                    item.archived ? 'bg-amber-50/40 border-amber-200/60' : item.done ? 'bg-slate-50/80 opacity-75' : 'hover:border-slate-300'
+                }`;
 
                 const topRow = document.createElement('div');
                 topRow.className = 'flex items-center justify-between gap-2.5';
@@ -1140,6 +1313,7 @@
                 const left = document.createElement('div');
                 left.className = 'flex items-center gap-3 flex-1 min-w-0 cursor-pointer';
                 left.onclick = () => {
+                    if (item.archived) return; // تسک آرشیو شده با کلیک تغییر نکند
                     item.done = !item.done;
                     if (item.done && item.estimatedMinutes && !item.actualMinutes) {
                         openActualTimeModal(item);
@@ -1167,12 +1341,41 @@
                 const actions = document.createElement('div');
                 actions.className = 'flex items-center gap-1 shrink-0';
 
+                // دکمه آرشیو یا بازگردانی از آرشیو
+                if (item.done || item.archived) {
+                    const archiveBtn = document.createElement('button');
+                    archiveBtn.title = item.archived ? 'خروج از آرشیو' : 'آرشیو کردن این کار';
+                    archiveBtn.className = `p-1.5 rounded-xl transition text-[11px] flex items-center gap-1 font-bold ${
+                        item.archived 
+                            ? 'bg-amber-100 hover:bg-amber-200 text-amber-800' 
+                            : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                    }`;
+                    archiveBtn.innerHTML = `
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+                        <span>${item.archived ? 'بازگردانی' : 'آرشیو'}</span>
+                    `;
+                    archiveBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        item.archived = !item.archived;
+                        if (item.archived) {
+                            item.archivedAt = new Date().toISOString();
+                            showNotification('کار به آرشیو منتقل شد');
+                        } else {
+                            showNotification('کار از آرشیو خارج شد');
+                        }
+                        saveLocalData();
+                        renderProjectsBar();
+                        renderUI();
+                    };
+                    actions.appendChild(archiveBtn);
+                }
+
                 const hasTimeTracking = item.estimatedMinutes != null || item.actualMinutes != null || (Array.isArray(item.projects) && item.projects.some(tag => {
                     const found = projects.find(p => p.name === tag);
                     return found && found.requiresTime;
                 }));
 
-                if (hasTimeTracking) {
+                if (hasTimeTracking && !item.archived) {
                     const timerBtn = document.createElement('button');
                     timerBtn.title = 'ثبت یا تغییر زمان واقعی صرف‌شده';
                     timerBtn.className = 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100 p-1.5 rounded-xl transition text-[11px] flex items-center gap-1 font-bold';
@@ -1211,10 +1414,14 @@
                     return found && found.requiresTime;
                 });
 
-                if (hasTimedTag || item.dueDate || item.estimatedMinutes != null) {
+                if (hasTimedTag || item.dueDate || item.estimatedMinutes != null || item.archived) {
                     const timeSpan = document.createElement('span');
                     timeSpan.className = 'text-slate-400 text-[10px] ml-1';
-                    timeSpan.textContent = item.date;
+                    if (item.archived && item.archivedAt) {
+                        timeSpan.textContent = `آرشیو: ${item.archivedAt.slice(0, 10)}`;
+                    } else {
+                        timeSpan.textContent = item.date;
+                    }
                     bottomRow.appendChild(timeSpan);
                 }
 
@@ -1254,6 +1461,14 @@
                 card.appendChild(bottomRow);
                 todoList.appendChild(card);
             });
+
+            // مدیریت دکمه بارگذاری موارد بیشتر برای حالت Lazy
+            if (displayLimit < totalCount) {
+                loadMoreBtnContainer.classList.remove('hidden');
+                loadMoreBtn.textContent = `نمایش ${Math.min(PAGE_STEP, totalCount - displayLimit)} کار دیگر (${totalCount - displayLimit} مورد باقی‌مانده)`;
+            } else {
+                loadMoreBtnContainer.classList.add('hidden');
+            }
         }
 
         addForm.addEventListener('submit', (e) => {
@@ -1272,11 +1487,15 @@
 
             const now = new Date();
             const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            const dateStr = now.toISOString().slice(0, 10);
 
             todos.unshift({
                 id: Date.now().toString(),
                 title: val,
                 done: false,
+                archived: false,
+                archivedAt: null,
+                createdAt: dateStr,
                 date: `امروز ${timeStr}`,
                 projects: selectedTags,
                 estimatedMinutes: estMins,
@@ -1303,6 +1522,7 @@
                 btn.classList.add('bg-white', 'text-indigo-700', 'shadow-sm');
                 btn.classList.remove('text-indigo-100');
                 currentFilter = btn.dataset.filter;
+                displayLimit = PAGE_STEP; // ریست تعداد برای لود تنبل در تب جدید
                 renderUI();
             });
         });
