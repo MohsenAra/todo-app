@@ -1,47 +1,4 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>مدیریت هوشمند کارها (سینک ابری)</title>
-    <meta name="theme-color" content="#4f46e5">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="کارهای من">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234f46e5'><path d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/></svg>">
-    
-    <!-- تنظیمات پیشرفته PWA برای تبدیل به Web App مستقل -->
-    <link rel="manifest" id="manifest-placeholder">
-    
-    <!-- استایل‌های مدرن با Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: 'Vazirmatn', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .task-done {
-            text-decoration: line-through;
-            opacity: 0.55;
-        }
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
-</head>
-<body class="bg-slate-100 min-h-screen text-slate-800 antialiased flex flex-col items-center justify-center p-0 sm:p-4">
-
-    <!-- کانتینر اصلی اپلیکیشن -->
-    <main class="w-full max-w-md h-screen sm:h-[92vh] bg-white sm:rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden relative border border-slate-200/60">
-        
+<!-- ... existing code ... -->
         <!-- نوار بالایی هدر -->
         <header class="bg-indigo-600 text-white p-5 shadow-md">
             <div class="flex items-center justify-between">
@@ -100,11 +57,11 @@
                 <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" id="projects-bar">
                     <!-- دکمه‌های پروژه‌ها به صورت پویا ساخته می‌شوند -->
                 </div>
-                <button id="add-project-btn" title="افزودن پروژه جدید" class="shrink-0 p-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl transition flex items-center gap-1 text-[11px] font-bold">
+                <button id="add-project-btn" title="افزودن برچسب/پروژه جدید" class="shrink-0 p-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl transition flex items-center gap-1 text-[11px] font-bold">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                     </svg>
-                    <span>پروژه نو</span>
+                    <span>برچسب نو</span>
                 </button>
             </div>
         </section>
@@ -142,14 +99,30 @@
         </section>
 
         <!-- فرم افزودن کار جدید -->
-        <footer class="p-3 bg-slate-50 border-t border-slate-200 space-y-2">
-            <!-- نوار انتخاب سریع پروژه برای کار جدید -->
-            <div class="flex items-center gap-2 text-xs text-slate-500 px-1">
-                <span class="text-[11px] font-medium text-slate-400">پروژه:</span>
-                <select id="task-project-select" class="bg-white border border-slate-300 rounded-xl px-2.5 py-1 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                    <!-- گزینه‌ها به صورت پویا پر می‌شوند -->
-                </select>
+        <footer class="p-3 bg-slate-50 border-t border-slate-200 space-y-2.5">
+            <!-- برچسب‌ها / پروژه‌های چندگانه انتخابی برای تسک -->
+            <div class="space-y-1">
+                <div class="flex items-center justify-between text-[11px] text-slate-500 px-1">
+                    <span class="font-medium">انتخاب برچسب‌ها / پروژه‌ها (چندتایی):</span>
+                    <span id="selected-tags-summary" class="text-indigo-600 font-semibold">بدون برچسب</span>
+                </div>
+                <div id="task-tags-selector" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+                    <!-- چیپ‌های انتخاب چندگانه پروژه اینجا تزریق می‌شوند -->
+                </div>
             </div>
+
+            <!-- بخش زمان تخمینی و تاریخ (پویا بر اساس پروژه یا انتخاب کاربر) -->
+            <div id="time-tracking-fields" class="bg-indigo-50/70 border border-indigo-100 p-2.5 rounded-2xl flex items-center gap-2 text-xs transition-all">
+                <div class="flex-1">
+                    <label class="block text-[10px] text-indigo-700 font-semibold mb-0.5">تخمین زمان (دقیقه):</label>
+                    <input type="number" min="0" step="5" id="task-est-minutes" placeholder="مثلاً: 45" class="w-full bg-white border border-indigo-200 rounded-xl px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-[10px] text-indigo-700 font-semibold mb-0.5">تاریخ / مهلت:</label>
+                    <input type="date" id="task-due-date" class="w-full bg-white border border-indigo-200 rounded-xl px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 text-slate-700">
+                </div>
+            </div>
+
             <form id="add-form" class="flex items-center gap-2">
                 <input 
                     type="text" 
@@ -170,45 +143,79 @@
             </form>
         </footer>
 
-        <!-- مودال افزودن پروژه جدید -->
+        <!-- مودال ثبت / ویرایش زمان واقعی اجرا (Actual Spent Time) -->
+        <div id="actual-time-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-3xl p-5 w-full max-w-xs shadow-2xl space-y-3.5">
+                <div class="flex items-center justify-between border-b pb-2.5">
+                    <h3 class="font-bold text-slate-800 text-sm">ثبت زمان واقعی اجرا</h3>
+                    <button id="close-actual-time-btn" class="text-slate-400 hover:text-slate-600 p-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <form id="actual-time-form" class="space-y-3">
+                    <p id="actual-time-task-title" class="text-xs text-slate-600 font-medium line-clamp-2 bg-slate-50 p-2 rounded-xl"></p>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">زمان واقعی صرف‌شده (دقیقه):</label>
+                        <input 
+                            type="number" 
+                            id="actual-minutes-input" 
+                            min="0"
+                            placeholder="مثلاً: 60"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            required
+                        >
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-xl transition text-xs shadow-md">
+                        ثبت و ذخیره زمان
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- مودال افزودن پروژه / برچسب جدید -->
         <div id="new-project-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-white rounded-3xl p-5 w-full max-w-xs shadow-2xl space-y-3.5">
                 <div class="flex items-center justify-between border-b pb-2.5">
-                    <h3 class="font-bold text-slate-800 text-sm">افزودن دسته‌بندی یا پروژه</h3>
+                    <h3 class="font-bold text-slate-800 text-sm">افزودن برچسب / پروژه</h3>
                     <button id="close-project-modal-btn" class="text-slate-400 hover:text-slate-600 p-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
                 <form id="new-project-form" class="space-y-3">
                     <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">نام پروژه (مثلاً: خرید خانه، فرزندان)</label>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">نام برچسب (مثلاً: شرکت، خرید خانه، فوری)</label>
                         <input 
                             type="text" 
                             id="project-name-input" 
-                            placeholder="نام پروژه را بنویسید..." 
+                            placeholder="نام برچسب را بنویسید..." 
                             class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             required
                         >
                     </div>
+                    <!-- تیک فعال‌سازی پیگیری زمان برای این پروژه -->
+                    <label class="flex items-center gap-2 cursor-pointer bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                        <input type="checkbox" id="project-requires-time-input" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-xs text-slate-700 font-medium">نیاز به تخمین زمان و تاریخ (مثل کارهای شرکت)</span>
+                    </label>
                     <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-xl transition text-xs shadow-md">
-                        ثبت پروژه
+                        ثبت برچسب
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- مودال مدیریت/ویرایش پروژه (Rename و Delete) -->
+        <!-- مودال مدیریت/ویرایش پروژه (Rename و Delete و تغییر وضعیت زمان) -->
         <div id="manage-project-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-white rounded-3xl p-5 w-full max-w-xs shadow-2xl space-y-3.5">
                 <div class="flex items-center justify-between border-b pb-2.5">
-                    <h3 class="font-bold text-slate-800 text-sm">مدیریت پروژه</h3>
+                    <h3 class="font-bold text-slate-800 text-sm">مدیریت برچسب</h3>
                     <button id="close-manage-modal-btn" class="text-slate-400 hover:text-slate-600 p-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
                 <form id="rename-project-form" class="space-y-3">
                     <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">تغییر نام پروژه</label>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">تغییر نام برچسب</label>
                         <input 
                             type="text" 
                             id="edit-project-name-input" 
@@ -216,9 +223,13 @@
                             required
                         >
                     </div>
+                    <label class="flex items-center gap-2 cursor-pointer bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                        <input type="checkbox" id="edit-project-requires-time-input" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-xs text-slate-700 font-medium">نیاز به تخمین زمان و تاریخ</span>
+                    </label>
                     <div class="flex gap-2">
                         <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-xl transition text-xs shadow-md">
-                            ذخیره نام جدید
+                            ذخیره تغییرات
                         </button>
                         <button type="button" id="delete-project-btn" class="px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-medium py-2 rounded-xl transition text-xs flex items-center justify-center gap-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -230,82 +241,8 @@
         </div>
 
         <!-- مودال اتصال و ورود (پشتیبانی همزمان از گوگل و شناسه ابری مطمئن) -->
-        <div id="user-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-            <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-4">
-                <div class="flex items-center justify-between border-b pb-3">
-                    <h3 class="font-bold text-slate-800 text-base">اتصال به فضای ابری</h3>
-                    <button id="close-user-modal-btn" class="text-slate-400 hover:text-slate-600 p-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
-                </div>
-
-                <div id="logged-in-section" class="hidden space-y-3">
-                    <div class="flex items-center gap-3 py-2">
-                        <div id="modal-user-avatar" class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-lg overflow-hidden shrink-0">
-                            U
-                        </div>
-                        <div class="truncate">
-                            <p id="modal-user-name" class="font-bold text-slate-800 text-sm truncate">کاربر متصل</p>
-                            <p id="modal-user-email" class="text-xs text-slate-400 truncate">user@sync</p>
-                        </div>
-                    </div>
-                    <p class="text-xs text-slate-500 bg-slate-50 p-3 rounded-2xl leading-relaxed">
-                        کارهای شما به‌طور آنی با این شناسه در تمام دستگاه‌ها همگام هستند.
-                    </p>
-                    <button id="disconnect-btn" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 font-medium py-2.5 rounded-xl transition text-xs border border-rose-200">
-                        خروج / قطع اتصال
-                    </button>
-                </div>
-
-                <div id="login-options-section" class="space-y-4">
-                    <!-- روش اول: ورود با گوگل -->
-                    <div>
-                        <p class="text-xs text-slate-500 font-medium mb-2">روش ۱: اتصال مستقیم با حساب گوگل</p>
-                        <button id="google-login-btn" class="w-full py-2.5 px-3 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 text-slate-700 transition shadow-sm active:scale-95">
-                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12.24 10.285V13.4h6.887C18.2 16.24 15.65 18 12.24 18c-3.32 0-6-2.69-6-6s2.68-6 6-6c1.49 0 2.85.54 3.9 1.44l2.51-2.5C16.89 3.32 14.7 2.4 12.24 2.4 6.96 2.4 2.68 6.68 2.68 12s4.28 9.6 9.56 9.6c5.52 0 9.2-3.88 9.2-9.36 0-.64-.06-1.26-.17-1.95H12.24z"/>
-                            </svg>
-                            <span>ورود با اکانت گوگل</span>
-                        </button>
-                        <p id="google-error-hint" class="text-[11px] text-amber-600 mt-1.5 hidden leading-relaxed">
-                            💡 اگر ورود با گوگل خطا داد، کافیست در فرم زیر یک نام کاربری دلخواه وارد کنید.
-                        </p>
-                    </div>
-
-                    <div class="relative flex items-center justify-center">
-                        <div class="border-t border-slate-200 w-full"></div>
-                        <span class="bg-white px-2 text-[10px] text-slate-400 absolute">یا راهکار سریع بدون تحریم</span>
-                    </div>
-
-                    <!-- روش دوم: اتصال با شناسه ابری (بدون نیاز به پاپ‌آپ و بدون خطای Auth) -->
-                    <form id="key-sync-form" class="space-y-2.5">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1">روش ۲: شناسه ابری شخصی (ایمیل یا نام شما)</label>
-                            <input 
-                                type="text" 
-                                id="custom-sync-key" 
-                                placeholder="مثلاً: reza@gmail.com یا my-tasks-2026" 
-                                class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-left"
-                                dir="ltr"
-                                required
-                            >
-                        </div>
-                        <p class="text-[11px] text-slate-400 leading-relaxed">
-                            دقیقاً همین عبارت را در گوشی، لپ‌تاپ و شرکت وارد کنید تا تسک‌های شما فوراً سینک شوند.
-                        </p>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-xl transition text-xs shadow-md">
-                            اتصال به این شناسه ابری
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- پیام توست -->
-        <div id="toast-msg" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs py-2 px-4 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 z-50 whitespace-nowrap"></div>
-    </main>
-
-    <script type="module">
+<!-- ... existing code ... -->
+        <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -328,10 +265,13 @@
         const ALL_PROJECTS_TAB = 'همه کارها';
 
         let todos = [];
-        let projects = []; // هیچ پروژه پیش‌فرضی وجود ندارد
+        // پروژه‌ها ساختار شیء دارند: { name: string, requiresTime: boolean }
+        let projects = [];
+        let selectedTagsForNewTask = new Set();
         let currentFilter = 'all';
-        let currentProject = ALL_PROJECTS_TAB;
+        let currentProjectFilter = ALL_PROJECTS_TAB;
         let selectedProjectForManage = null;
+        let selectedTaskForActualTime = null;
         let db = null;
         let auth = null;
         let activeSyncId = localStorage.getItem(ACTIVE_SYNC_ID_KEY) || DEFAULT_GLOBAL_ID;
@@ -367,19 +307,32 @@
         const modalUserAvatar = document.getElementById('modal-user-avatar');
         const exportBtn = document.getElementById('export-btn');
         const projectsBar = document.getElementById('projects-bar');
-        const taskProjectSelect = document.getElementById('task-project-select');
+        const taskTagsSelector = document.getElementById('task-tags-selector');
+        const selectedTagsSummary = document.getElementById('selected-tags-summary');
+        const timeTrackingFields = document.getElementById('time-tracking-fields');
+        const taskEstMinutes = document.getElementById('task-est-minutes');
+        const taskDueDate = document.getElementById('task-due-date');
         const addProjectBtn = document.getElementById('add-project-btn');
         const newProjectModal = document.getElementById('new-project-modal');
         const closeProjectModalBtn = document.getElementById('close-project-modal-btn');
         const newProjectForm = document.getElementById('new-project-form');
         const projectNameInput = document.getElementById('project-name-input');
+        const projectRequiresTimeInput = document.getElementById('project-requires-time-input');
         
         // المان‌های مدیریت پروژه
         const manageProjectModal = document.getElementById('manage-project-modal');
         const closeManageModalBtn = document.getElementById('close-manage-modal-btn');
         const renameProjectForm = document.getElementById('rename-project-form');
         const editProjectNameInput = document.getElementById('edit-project-name-input');
+        const editProjectRequiresTimeInput = document.getElementById('edit-project-requires-time-input');
         const deleteProjectBtn = document.getElementById('delete-project-btn');
+
+        // المان‌های ثبت زمان واقعی
+        const actualTimeModal = document.getElementById('actual-time-modal');
+        const closeActualTimeBtn = document.getElementById('close-actual-time-btn');
+        const actualTimeForm = document.getElementById('actual-time-form');
+        const actualTimeTaskTitle = document.getElementById('actual-time-task-title');
+        const actualMinutesInput = document.getElementById('actual-minutes-input');
 
         function showNotification(text) {
             toastMsg.textContent = text;
@@ -391,22 +344,59 @@
             }, 3000);
         }
 
+        // تبدیل و نرمال‌سازی پروژه‌ها (سازگاری با نسخه‌های قدیمی که فقط نام رشته‌ای ذخیره کرده بودند)
+        function normalizeProjects(rawList) {
+            if (!Array.isArray(rawList)) return [];
+            return rawList.map(item => {
+                if (typeof item === 'string') {
+                    return { name: item, requiresTime: false };
+                }
+                return {
+                    name: item.name || '',
+                    requiresTime: !!item.requiresTime
+                };
+            }).filter(p => p.name.trim() !== '');
+        }
+
+        // نرمال‌سازی تسک‌ها (پشتیبانی از ساختار قدیمی project: string به projects: string[])
+        function normalizeTodos(rawTodos) {
+            if (!Array.isArray(rawTodos)) return [];
+            return rawTodos.map(item => {
+                let tags = [];
+                if (Array.isArray(item.projects)) {
+                    tags = item.projects;
+                } else if (item.project) {
+                    tags = [item.project];
+                }
+                return {
+                    id: item.id || Date.now().toString(),
+                    title: item.title || '',
+                    done: !!item.done,
+                    date: item.date || '',
+                    projects: tags,
+                    estimatedMinutes: item.estimatedMinutes ? Number(item.estimatedMinutes) : null,
+                    actualMinutes: item.actualMinutes ? Number(item.actualMinutes) : null,
+                    dueDate: item.dueDate || null
+                };
+            });
+        }
+
         function loadLocalData() {
             const rawProjects = localStorage.getItem(PROJECTS_STORAGE_KEY);
             if (rawProjects) {
                 try {
-                    projects = JSON.parse(rawProjects);
+                    projects = normalizeProjects(JSON.parse(rawProjects));
                 } catch (e) {
                     projects = [];
                 }
             } else {
-                projects = []; // بدون هیچ پروژه اولیه
+                projects = [];
             }
 
             const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
             if (raw) {
                 try {
-                    todos = JSON.parse(raw);
+                    todos = normalizeTodos(JSON.parse(raw));
                 } catch (e) {
                     todos = [];
                 }
@@ -414,6 +404,7 @@
                 todos = [];
             }
             renderProjectsBar();
+            renderTaskTagsSelector();
             renderUI();
         }
 
@@ -425,7 +416,7 @@
             }
         }
 
-        // ارسال تغییرات به ابر با مدیریت خطای واضح
+        // ارسال تغییرات به ابر
         async function syncToCloud() {
             if (!db || !activeSyncId) return;
             try {
@@ -505,15 +496,16 @@
                     isSyncingFromCloud = true;
 
                     if (data && Array.isArray(data.items)) {
-                        todos = data.items;
+                        todos = normalizeTodos(data.items);
                         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
                     }
                     if (data && Array.isArray(data.projects)) {
-                        projects = data.projects;
+                        projects = normalizeProjects(data.projects);
                         localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
                     }
 
                     renderProjectsBar();
+                    renderTaskTagsSelector();
                     renderUI();
                     isSyncingFromCloud = false;
                 } else {
@@ -531,13 +523,73 @@
             });
         }
 
+        // بررسی اینکه آیا برچسب‌های انتخاب‌شده فعلی نیازمند فیلد زمان هستند یا خیر
+        function updateTimeTrackingVisibility() {
+            const hasTimeTrackingTag = Array.from(selectedTagsForNewTask).some(tagName => {
+                const found = projects.find(p => p.name === tagName);
+                return found && found.requiresTime;
+            });
+
+            if (hasTimeTrackingTag) {
+                timeTrackingFields.classList.remove('opacity-40');
+                timeTrackingFields.classList.add('ring-2', 'ring-indigo-300');
+            } else {
+                timeTrackingFields.classList.remove('ring-2', 'ring-indigo-300');
+                timeTrackingFields.classList.add('opacity-70');
+            }
+        }
+
+        // رندر کردن تگ‌های قابل انتخاب برای تسک جدید (چند انتخابی)
+        function renderTaskTagsSelector() {
+            taskTagsSelector.innerHTML = '';
+            if (projects.length === 0) {
+                taskTagsSelector.innerHTML = '<span class="text-[11px] text-slate-400 py-1">هیچ برچسبی ایجاد نشده است. از دکمه «برچسب نو» بسازید.</span>';
+                selectedTagsSummary.textContent = 'بدون برچسب';
+                updateTimeTrackingVisibility();
+                return;
+            }
+
+            projects.forEach(p => {
+                const isSelected = selectedTagsForNewTask.has(p.name);
+                const tagBtn = document.createElement('button');
+                tagBtn.type = 'button';
+                tagBtn.className = `px-2.5 py-1 rounded-xl text-xs transition flex items-center gap-1 shrink-0 font-medium ${
+                    isSelected 
+                        ? 'bg-indigo-600 text-white shadow-sm' 
+                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`;
+                tagBtn.innerHTML = `
+                    <span>${p.name}</span>
+                    ${p.requiresTime ? '<span class="text-[10px]" title="نیازمند زمان">⏱️</span>' : ''}
+                    ${isSelected ? '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>' : ''}
+                `;
+                tagBtn.onclick = () => {
+                    if (selectedTagsForNewTask.has(p.name)) {
+                        selectedTagsForNewTask.delete(p.name);
+                    } else {
+                        selectedTagsForNewTask.add(p.name);
+                    }
+                    renderTaskTagsSelector();
+                    updateTimeTrackingVisibility();
+                };
+                taskTagsSelector.appendChild(tagBtn);
+            });
+
+            if (selectedTagsForNewTask.size === 0) {
+                selectedTagsSummary.textContent = 'بدون برچسب';
+            } else {
+                selectedTagsSummary.textContent = `${selectedTagsForNewTask.size} برچسب انتخاب شد`;
+            }
+            updateTimeTrackingVisibility();
+        }
+
+        // رندر کردن نوار فیلتر بالای صفحه
         function renderProjectsBar() {
             projectsBar.innerHTML = '';
-            taskProjectSelect.innerHTML = '';
 
             // تب همیشه موجود "همه کارها"
             const allBtn = document.createElement('button');
-            const isAllSelected = currentProject === ALL_PROJECTS_TAB;
+            const isAllSelected = currentProjectFilter === ALL_PROJECTS_TAB;
             allBtn.className = `px-3 py-1 rounded-xl text-xs whitespace-nowrap transition flex items-center gap-1.5 font-medium ${
                 isAllSelected 
                     ? 'bg-indigo-600 text-white shadow-sm' 
@@ -546,20 +598,14 @@
             const uncompletedCount = todos.filter(t => !t.done).length;
             allBtn.innerHTML = `<span>${ALL_PROJECTS_TAB}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isAllSelected ? 'bg-indigo-800/60 text-white' : 'bg-slate-100 text-slate-500'}">${uncompletedCount}</span>`;
             allBtn.onclick = () => {
-                currentProject = ALL_PROJECTS_TAB;
+                currentProjectFilter = ALL_PROJECTS_TAB;
                 renderProjectsBar();
                 renderUI();
             };
             projectsBar.appendChild(allBtn);
 
-            // گزینه عمومی/بدون پروژه در منوی افزودن کار
-            const defaultOpt = document.createElement('option');
-            defaultOpt.value = '';
-            defaultOpt.textContent = 'بدون دسته‌بندی';
-            taskProjectSelect.appendChild(defaultOpt);
-
             projects.forEach(p => {
-                const isSelected = p === currentProject;
+                const isSelected = p.name === currentProjectFilter;
                 const container = document.createElement('div');
                 container.className = `inline-flex items-center rounded-xl border text-xs whitespace-nowrap transition overflow-hidden ${
                     isSelected 
@@ -567,20 +613,20 @@
                         : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
                 }`;
 
-                // دکمه انتخاب پروژه
+                // دکمه فیلتر بر اساس این برچسب
                 const selectBtn = document.createElement('button');
                 selectBtn.className = 'px-2.5 py-1 flex items-center gap-1.5 font-medium';
-                const count = todos.filter(t => t.project === p && !t.done).length;
-                selectBtn.innerHTML = `<span>${p}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-indigo-800/60 text-white' : 'bg-slate-100 text-slate-500'}">${count}</span>`;
+                const count = todos.filter(t => Array.isArray(t.projects) && t.projects.includes(p.name) && !t.done).length;
+                selectBtn.innerHTML = `<span>${p.name}</span>${p.requiresTime ? '<span class="text-[10px]">⏱️</span>' : ''}<span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-indigo-800/60 text-white' : 'bg-slate-100 text-slate-500'}">${count}</span>`;
                 selectBtn.onclick = () => {
-                    currentProject = p;
+                    currentProjectFilter = p.name;
                     renderProjectsBar();
                     renderUI();
                 };
 
-                // دکمه تنظیمات (ویرایش نام و حذف)
+                // دکمه تنظیمات (ویرایش نام، تنظیم زمان و حذف)
                 const configBtn = document.createElement('button');
-                configBtn.title = `مدیریت پروژه «${p}»`;
+                configBtn.title = `مدیریت برچسب «${p.name}»`;
                 configBtn.className = `p-1 border-r ${
                     isSelected 
                         ? 'border-indigo-500 hover:bg-indigo-700 text-indigo-100' 
@@ -599,22 +645,14 @@
                 container.appendChild(selectBtn);
                 container.appendChild(configBtn);
                 projectsBar.appendChild(container);
-
-                // پر کردن منوی انتخاب در زمان ساخت تسک
-                const opt = document.createElement('option');
-                opt.value = p;
-                opt.textContent = p;
-                if (currentProject !== ALL_PROJECTS_TAB && currentProject === p) {
-                    opt.selected = true;
-                }
-                taskProjectSelect.appendChild(opt);
             });
         }
 
-        // مودال مدیریت پروژه (Rename / Delete)
-        function openManageProjectModal(projectName) {
-            selectedProjectForManage = projectName;
-            editProjectNameInput.value = projectName;
+        // مودال مدیریت پروژه (Rename / Delete / Toggle Time)
+        function openManageProjectModal(projectObj) {
+            selectedProjectForManage = projectObj;
+            editProjectNameInput.value = projectObj.name;
+            editProjectRequiresTimeInput.checked = !!projectObj.requiresTime;
             manageProjectModal.classList.remove('hidden');
             editProjectNameInput.focus();
         }
@@ -624,69 +662,85 @@
             selectedProjectForManage = null;
         };
 
-        // تغییر نام پروژه
+        // ذخیره تغییرات پروژه
         renameProjectForm.onsubmit = (e) => {
             e.preventDefault();
             const newName = editProjectNameInput.value.trim();
+            const newRequiresTime = editProjectRequiresTimeInput.checked;
             if (!newName || !selectedProjectForManage) return;
 
-            if (newName !== selectedProjectForManage && projects.includes(newName)) {
-                showNotification('این نام پروژه قبلاً ثبت شده است');
+            const oldName = selectedProjectForManage.name;
+            if (newName !== oldName && projects.some(p => p.name === newName)) {
+                showNotification('این نام برچسب قبلاً ثبت شده است');
                 return;
             }
 
-            const oldName = selectedProjectForManage;
-            projects = projects.map(p => p === oldName ? newName : p);
-            
-            // به‌روزرسانی پروژه در تسک‌های موجود
+            // به‌روزرسانی پروژه در لیست پروژه‌ها
+            projects = projects.map(p => {
+                if (p.name === oldName) {
+                    return { name: newName, requiresTime: newRequiresTime };
+                }
+                return p;
+            });
+
+            // به‌روزرسانی آرایه برچسب‌های تسک‌ها
             todos = todos.map(t => {
-                if (t.project === oldName) {
-                    return { ...t, project: newName };
+                if (Array.isArray(t.projects) && t.projects.includes(oldName)) {
+                    const updated = t.projects.map(tag => tag === oldName ? newName : tag);
+                    return { ...t, projects: updated };
                 }
                 return t;
             });
 
-            if (currentProject === oldName) {
-                currentProject = newName;
+            if (selectedTagsForNewTask.has(oldName)) {
+                selectedTagsForNewTask.delete(oldName);
+                selectedTagsForNewTask.add(newName);
+            }
+
+            if (currentProjectFilter === oldName) {
+                currentProjectFilter = newName;
             }
 
             saveLocalData();
             renderProjectsBar();
+            renderTaskTagsSelector();
             renderUI();
             manageProjectModal.classList.add('hidden');
-            showNotification(`نام پروژه به «${newName}» تغییر یافت`);
+            showNotification(`برچسب «${newName}» به‌روزرسانی شد`);
         };
 
         // حذف پروژه
         deleteProjectBtn.onclick = () => {
             if (!selectedProjectForManage) return;
-            const projectToDelete = selectedProjectForManage;
+            const projectToDelete = selectedProjectForManage.name;
 
-            // حذف پروژه از لیست
-            projects = projects.filter(p => p !== projectToDelete);
+            projects = projects.filter(p => p.name !== projectToDelete);
+            selectedTagsForNewTask.delete(projectToDelete);
 
-            // تسک‌های این پروژه به حالت بدون دسته‌بندی تبدیل می‌شوند
+            // حذف این برچسب از تسک‌ها
             todos = todos.map(t => {
-                if (t.project === projectToDelete) {
-                    return { ...t, project: '' };
+                if (Array.isArray(t.projects)) {
+                    return { ...t, projects: t.projects.filter(tag => tag !== projectToDelete) };
                 }
                 return t;
             });
 
-            if (currentProject === projectToDelete) {
-                currentProject = ALL_PROJECTS_TAB;
+            if (currentProjectFilter === projectToDelete) {
+                currentProjectFilter = ALL_PROJECTS_TAB;
             }
 
             saveLocalData();
             renderProjectsBar();
+            renderTaskTagsSelector();
             renderUI();
             manageProjectModal.classList.add('hidden');
-            showNotification(`پروژه «${projectToDelete}» حذف شد`);
+            showNotification(`برچسب «${projectToDelete}» حذف شد`);
         };
 
-        // مودال ایجاد پروژه
+        // مودال ایجاد پروژه جدید
         addProjectBtn.onclick = () => {
             projectNameInput.value = '';
+            projectRequiresTimeInput.checked = false;
             newProjectModal.classList.remove('hidden');
             projectNameInput.focus();
         };
@@ -698,20 +752,49 @@
         newProjectForm.onsubmit = (e) => {
             e.preventDefault();
             const pName = projectNameInput.value.trim();
+            const reqTime = projectRequiresTimeInput.checked;
             if (!pName) return;
 
-            if (projects.includes(pName) || pName === ALL_PROJECTS_TAB) {
-                showNotification('این پروژه قبلاً ساخته شده است');
+            if (projects.some(p => p.name === pName) || pName === ALL_PROJECTS_TAB) {
+                showNotification('این برچسب قبلاً ساخته شده است');
                 return;
             }
 
-            projects.push(pName);
-            currentProject = pName;
+            projects.push({ name: pName, requiresTime: reqTime });
+            selectedTagsForNewTask.add(pName); // انتخاب خودکار برچسب جدید در فرم
             saveLocalData();
             renderProjectsBar();
+            renderTaskTagsSelector();
             renderUI();
             newProjectModal.classList.add('hidden');
-            showNotification(`پروژه «${pName}» با موفقیت افزوده شد`);
+            showNotification(`برچسب «${pName}» با موفقیت افزوده شد`);
+        };
+
+        // مودال ثبت زمان واقعی
+        function openActualTimeModal(item) {
+            selectedTaskForActualTime = item;
+            actualTimeTaskTitle.textContent = item.title;
+            actualMinutesInput.value = item.actualMinutes || item.estimatedMinutes || '';
+            actualTimeModal.classList.remove('hidden');
+            actualMinutesInput.focus();
+        }
+
+        closeActualTimeBtn.onclick = () => {
+            actualTimeModal.classList.add('hidden');
+            selectedTaskForActualTime = null;
+        };
+
+        actualTimeForm.onsubmit = (e) => {
+            e.preventDefault();
+            if (!selectedTaskForActualTime) return;
+            const minutes = parseInt(actualMinutesInput.value, 10);
+            if (isNaN(minutes) || minutes < 0) return;
+
+            selectedTaskForActualTime.actualMinutes = minutes;
+            saveLocalData();
+            renderUI();
+            actualTimeModal.classList.add('hidden');
+            showNotification(`زمان واقعی صرف‌شده: ${minutes} دقیقه ثبت شد`);
         };
 
         // مقداردهی اولیه Firebase
@@ -778,8 +861,10 @@
 
             todos = [];
             projects = [];
+            selectedTagsForNewTask.clear();
             renderUI();
             renderProjectsBar();
+            renderTaskTagsSelector();
 
             authBtnLabel.textContent = "اتصال به ابر";
             loggedInSection.classList.add('hidden');
@@ -811,13 +896,13 @@
         function renderUI() {
             todoList.innerHTML = '';
             const filtered = todos.filter(t => {
-                // فیلتر وضعیت (همه، فعال، انجام‌شده)
+                // فیلتر وضعیت
                 if (currentFilter === 'active' && t.done) return false;
                 if (currentFilter === 'completed' && !t.done) return false;
 
-                // فیلتر پروژه
-                if (currentProject !== ALL_PROJECTS_TAB) {
-                    if (t.project !== currentProject) return false;
+                // فیلتر برچسب / پروژه
+                if (currentProjectFilter !== ALL_PROJECTS_TAB) {
+                    if (!Array.isArray(t.projects) || !t.projects.includes(currentProjectFilter)) return false;
                 }
 
                 return true;
@@ -831,12 +916,20 @@
 
             filtered.forEach(item => {
                 const card = document.createElement('div');
-                card.className = `flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl transition select-none ${item.done ? 'bg-slate-100/60 opacity-60' : 'hover:border-slate-300'}`;
+                card.className = `flex flex-col p-3 bg-slate-50 border border-slate-200/80 rounded-2xl transition select-none space-y-2 ${item.done ? 'bg-slate-100/60 opacity-60' : 'hover:border-slate-300'}`;
+
+                // ردیف بالایی: چک‌باکس، متن، دکمه حذف
+                const topRow = document.createElement('div');
+                topRow.className = 'flex items-center justify-between gap-2.5';
 
                 const left = document.createElement('div');
                 left.className = 'flex items-center gap-3 flex-1 min-w-0 cursor-pointer';
                 left.onclick = () => {
                     item.done = !item.done;
+                    // اگر تسک نیاز به زمان دارد و کامل شده ولی زمان واقعی ندارد، مودال ثبت زمان باز شود
+                    if (item.done && item.estimatedMinutes && !item.actualMinutes) {
+                        openActualTimeModal(item);
+                    }
                     saveLocalData();
                     renderProjectsBar();
                     renderUI();
@@ -850,34 +943,40 @@
                     check.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
                 }
 
-                const info = document.createElement('div');
-                info.className = 'truncate flex-1';
                 const text = document.createElement('p');
-                text.className = `text-sm font-medium leading-relaxed truncate ${item.done ? 'task-done text-slate-400' : 'text-slate-800'}`;
+                text.className = `text-sm font-medium leading-relaxed truncate flex-1 ${item.done ? 'task-done text-slate-400' : 'text-slate-800'}`;
                 text.textContent = item.title;
 
-                const meta = document.createElement('div');
-                meta.className = 'flex items-center gap-2 mt-0.5';
+                left.appendChild(check);
+                left.appendChild(text);
 
-                const time = document.createElement('span');
-                time.className = 'text-[11px] text-slate-400';
-                time.textContent = item.date;
+                // دکمه‌های کنترلی سمت چپ (ثبت زمان واقعی + دکمه حذف)
+                const actions = document.createElement('div');
+                actions.className = 'flex items-center gap-1 shrink-0';
 
-                if (item.project) {
-                    const projectTag = document.createElement('span');
-                    projectTag.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100/80';
-                    projectTag.textContent = item.project;
-                    meta.appendChild(projectTag);
+                // دکمه ثبت / تغییر زمان واقعی (اگر تسک زمان‌دار باشد)
+                const hasTimeTracking = item.estimatedMinutes != null || item.actualMinutes != null || (Array.isArray(item.projects) && item.projects.some(tag => {
+                    const found = projects.find(p => p.name === tag);
+                    return found && found.requiresTime;
+                }));
+
+                if (hasTimeTracking) {
+                    const timerBtn = document.createElement('button');
+                    timerBtn.title = 'ثبت یا تغییر زمان واقعی صرف‌شده';
+                    timerBtn.className = 'text-indigo-600 hover:bg-indigo-100 p-1.5 rounded-xl transition text-xs flex items-center gap-1 font-semibold';
+                    timerBtn.innerHTML = `
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>${item.actualMinutes ? `${item.actualMinutes}د` : 'ثبت زمان'}</span>
+                    `;
+                    timerBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        openActualTimeModal(item);
+                    };
+                    actions.appendChild(timerBtn);
                 }
 
-                meta.appendChild(time);
-                info.appendChild(text);
-                info.appendChild(meta);
-                left.appendChild(check);
-                left.appendChild(info);
-
                 const del = document.createElement('button');
-                del.className = 'text-slate-400 hover:text-rose-500 p-2 rounded-xl transition hover:bg-rose-50 active:scale-95 shrink-0 mr-1';
+                del.className = 'text-slate-400 hover:text-rose-500 p-1.5 rounded-xl transition hover:bg-rose-50 active:scale-95';
                 del.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>';
                 del.onclick = (e) => {
                     e.stopPropagation();
@@ -888,8 +987,57 @@
                     showNotification('کار حذف شد');
                 };
 
-                card.appendChild(left);
-                card.appendChild(del);
+                actions.appendChild(del);
+                topRow.appendChild(left);
+                topRow.appendChild(actions);
+
+                // ردیف پایینی: متادیتا (برچسب‌های چندگانه + زمان تخمینی و واقعی + تاریخ)
+                const bottomRow = document.createElement('div');
+                bottomRow.className = 'flex flex-wrap items-center gap-1.5 text-[11px] pt-1 border-t border-slate-200/50';
+
+                // تاریخ ثبت
+                const timeSpan = document.createElement('span');
+                timeSpan.className = 'text-slate-400 text-[10px] ml-1';
+                timeSpan.textContent = item.date;
+                bottomRow.appendChild(timeSpan);
+
+                // مهلت (Due Date) در صورت وجود
+                if (item.dueDate) {
+                    const dueBadge = document.createElement('span');
+                    dueBadge.className = 'px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200/80 font-medium text-[10px] flex items-center gap-1';
+                    dueBadge.innerHTML = `<span>📅 مهلت: ${item.dueDate}</span>`;
+                    bottomRow.appendChild(dueBadge);
+                }
+
+                // زمان تخمینی و واقعی
+                if (item.estimatedMinutes != null || item.actualMinutes != null) {
+                    const timeBadge = document.createElement('span');
+                    const isOverdue = item.actualMinutes && item.estimatedMinutes && item.actualMinutes > item.estimatedMinutes;
+                    timeBadge.className = `px-2 py-0.5 rounded-md border font-medium text-[10px] flex items-center gap-1 ${
+                        isOverdue 
+                            ? 'bg-rose-50 text-rose-700 border-rose-200' 
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    }`;
+                    
+                    let timeText = '';
+                    if (item.estimatedMinutes != null) timeText += `تخمین: ${item.estimatedMinutes}د`;
+                    if (item.actualMinutes != null) timeText += ` | واقعی: ${item.actualMinutes}د`;
+                    timeBadge.textContent = timeText;
+                    bottomRow.appendChild(timeBadge);
+                }
+
+                // لیست برچسب‌ها / پروژه‌ها (چندگانه)
+                if (Array.isArray(item.projects) && item.projects.length > 0) {
+                    item.projects.forEach(tag => {
+                        const tagBadge = document.createElement('span');
+                        tagBadge.className = 'px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100/90 font-semibold text-[10px]';
+                        tagBadge.textContent = `#${tag}`;
+                        bottomRow.appendChild(tagBadge);
+                    });
+                }
+
+                card.appendChild(topRow);
+                card.appendChild(bottomRow);
                 todoList.appendChild(card);
             });
         }
@@ -899,7 +1047,10 @@
             const val = taskInput.value.trim();
             if (!val) return;
 
-            const selectedProject = taskProjectSelect.value || (currentProject !== ALL_PROJECTS_TAB ? currentProject : '');
+            const selectedTags = Array.from(selectedTagsForNewTask);
+            const estMins = taskEstMinutes.value ? parseInt(taskEstMinutes.value, 10) : null;
+            const dueDateVal = taskDueDate.value || null;
+
             const now = new Date();
             const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
@@ -908,14 +1059,19 @@
                 title: val,
                 done: false,
                 date: `امروز ${timeStr}`,
-                project: selectedProject
+                projects: selectedTags,
+                estimatedMinutes: estMins,
+                actualMinutes: null,
+                dueDate: dueDateVal
             });
 
             taskInput.value = '';
+            taskEstMinutes.value = '';
+            taskDueDate.value = '';
             saveLocalData();
             renderProjectsBar();
             renderUI();
-            showNotification(selectedProject ? `کار به پروژه «${selectedProject}» اضافه شد` : 'کار با موفقیت افزوده شد');
+            showNotification(selectedTags.length > 0 ? `کار با ${selectedTags.length} برچسب ثبت شد` : 'کار با موفقیت افزوده شد');
         });
 
         filterButtons.forEach(btn => {
