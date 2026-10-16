@@ -772,34 +772,74 @@
             showNotification('کار جدید ذخیره شد');
         };
 
-        // سیستم تشخیص صوت به زبان فارسی
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-            const recognizer = new SpeechRecognition();
-            recognizer.lang = 'fa-IR';
-            recognizer.continuous = false;
+        // سیستم پیشرفته تشخیص صوت با سازگاری بالا برای کروم، اج، سافاری و موبایل
+        const SpeechRecognitionApi = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognizer = null;
+        let isRecordingVoice = false;
 
-            voiceInputBtn.onclick = () => {
-                try {
-                    recognizer.start();
-                    voiceInputBtn.classList.add('bg-rose-500', 'text-white', 'animate-pulse');
-                    showNotification('در حال شنیدن صدای شما...');
-                } catch(e) {
-                    recognizer.stop();
-                }
-            };
+        if (SpeechRecognitionApi) {
+            try {
+                recognizer = new SpeechRecognitionApi();
+                recognizer.lang = 'fa-IR';
+                recognizer.continuous = false;
+                recognizer.interimResults = true;
 
-            recognizer.onresult = (evt) => {
-                const transcript = evt.results[0][0].transcript;
-                taskInput.value = transcript;
-            };
+                recognizer.onstart = () => {
+                    isRecordingVoice = true;
+                    voiceInputBtn.classList.remove('bg-slate-100', 'text-slate-700');
+                    voiceInputBtn.classList.add('bg-rose-600', 'text-white', 'ring-2', 'ring-rose-400', 'animate-pulse');
+                    showNotification('🎤 در حال شنیدن صدای شما... بگویید');
+                };
 
-            recognizer.onend = () => {
-                voiceInputBtn.classList.remove('bg-rose-500', 'text-white', 'animate-pulse');
-            };
+                recognizer.onresult = (evt) => {
+                    let fullText = '';
+                    for (let i = evt.resultIndex; i < evt.results.length; ++i) {
+                        fullText += evt.results[i][0].transcript;
+                    }
+                    if (fullText.trim()) {
+                        taskInput.value = fullText.trim();
+                    }
+                };
+
+                recognizer.onerror = (err) => {
+                    console.warn("Speech error:", err.error);
+                    if (err.error === 'not-allowed') {
+                        showNotification('⚠️ لطفاً مجوز دسترسی به میکروفون را تأیید کنید');
+                    } else if (err.error === 'no-speech') {
+                        showNotification('صدایی شنیده نشد، دوباره امتحان کنید');
+                    } else {
+                        showNotification(`خطا در میکروفون: ${err.error}`);
+                    }
+                };
+
+                recognizer.onend = () => {
+                    isRecordingVoice = false;
+                    voiceInputBtn.classList.remove('bg-rose-600', 'text-white', 'ring-2', 'ring-rose-400', 'animate-pulse');
+                    voiceInputBtn.classList.add('bg-slate-100', 'text-slate-700');
+                };
+
+                voiceInputBtn.onclick = () => {
+                    if (!recognizer) return;
+                    if (isRecordingVoice) {
+                        recognizer.stop();
+                        return;
+                    }
+                    try {
+                        taskInput.value = '';
+                        recognizer.start();
+                    } catch (e) {
+                        recognizer.stop();
+                    }
+                };
+            } catch (err) {
+                console.error("Speech Init Error:", err);
+            }
         } else {
-            voiceInputBtn.classList.add('opacity-50');
-            voiceInputBtn.title = 'مرورگر شما از ورودی صوتی پشتیبانی نمی‌کند';
+            voiceInputBtn.classList.add('opacity-40', 'cursor-not-allowed');
+            voiceInputBtn.title = 'مرورگر شما از ورودی صوتی پشتیبانی نمی‌کند (در کروم تست کنید)';
+            voiceInputBtn.onclick = () => {
+                showNotification('مرورگر شما از تشخیص گفتار صوتی پشتیبانی نمی‌کند');
+            };
         }
 
         function startPomodoro(task) {
