@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>مدیریت هوشمند کارها | Argon Edition</title>
+    <title>مدیریت هوشمند کارها</title>
     
     <!-- تنظیمات PWA -->
     <meta name="theme-color" content="#4f46e5">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Argon Todo">
+    <meta name="apple-mobile-web-app-title" content="Smart Todo">
 
     <!-- بارگذاری Tailwind CSS، Chart.js و فونت وزیرمتن + اینتر -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,7 +20,7 @@
             theme: {
                 extend: {
                     colors: {
-                        argon: {
+                        brand: {
                             50: '#eef2ff',
                             100: '#e0e7ff',
                             500: '#6366f1',
@@ -50,9 +50,9 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        /* پس‌زمینه دینامیک آرگون با گوی‌های نوری */
+        /* پس‌زمینه دینامیک با گوی‌های نوری */
         body {
-            background: radial-gradient(circle at 15% 15%, #312e81 0%, #0f172a 45%, #020617 100%);
+            background: radial-gradient(circle at 15% 15%, #1e293b 0%, #0f172a 45%, #020617 100%);
             min-height: 100vh;
             overflow-x: hidden;
         }
@@ -61,7 +61,7 @@
             width: 320px;
             height: 320px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.28) 0%, rgba(99, 102, 241, 0) 70%);
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.22) 0%, rgba(16, 185, 129, 0) 70%);
             top: -80px;
             right: -80px;
             pointer-events: none;
@@ -72,7 +72,7 @@
             width: 280px;
             height: 280px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, rgba(236, 72, 153, 0) 70%);
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, rgba(99, 102, 241, 0) 70%);
             bottom: -60px;
             left: -60px;
             pointer-events: none;
@@ -85,12 +85,33 @@
         .animate-float {
             animation: subtleFloat 3.5s ease-in-out infinite;
         }
-        /* هدر آرگون گرادیانی */
-        .argon-header {
-            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 55%, #7c3aed 100%);
+        @keyframes swayTree {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(1.2deg) scale(1.01); }
         }
-        .dark .argon-header {
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #3b0764 100%);
+        .tree-sway {
+            transform-origin: bottom center;
+            animation: swayTree 6s ease-in-out infinite;
+        }
+        .tree-part {
+            transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: bottom center;
+        }
+        .tree-hidden {
+            opacity: 0;
+            transform: scale(0);
+            pointer-events: none;
+        }
+        .tree-visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+        /* هدر گرادیانی */
+        .app-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #059669 100%);
+        }
+        .dark .app-header {
+            background: linear-gradient(135deg, #1e1b4b 0%, #064e3b 100%);
         }
         /* کارت‌های تسک در حالت روشن و تاریک */
         .task-card {
@@ -116,8 +137,8 @@
     <!-- شاسی اصلی اپلیکیشن (پشتیبانی کامل از حالت شب و روز) -->
     <div class="w-full max-w-[440px] bg-slate-50/95 dark:bg-slate-900/95 sm:rounded-[38px] shadow-[0_28px_70px_-15px_rgba(0,0,0,0.65)] overflow-hidden min-h-screen sm:min-h-[780px] sm:max-h-[94vh] flex flex-col relative border border-white/25 dark:border-slate-700/60 backdrop-blur-2xl z-10 transition-colors duration-300">
 
-        <!-- هدر لوکس Argon همراه با داشبورد زنده پیشرفت -->
-        <header class="argon-header text-white pt-4 pb-3.5 px-4 shadow-lg sticky top-0 z-30 border-b border-white/15">
+        <!-- هدر همراه با داشبورد زنده پیشرفت -->
+        <header class="app-header text-white pt-4 pb-3.5 px-4 shadow-lg sticky top-0 z-30 border-b border-white/15">
             <!-- ردیف بالای هدر: پروفایل، عنوان، دکمه‌های کنترل -->
             <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-3 min-w-0">
@@ -129,7 +150,7 @@
                     <div class="min-w-0">
                         <div class="flex items-center gap-1.5">
                             <h1 class="text-base font-black tracking-tight truncate drop-shadow-sm" id="app-title-text" data-i18n="appTitle">کارهای روزمره من</h1>
-                            <span class="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-white/20 text-white backdrop-blur-md">Argon</span>
+                            <span id="tree-stage-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-md">🌱 جوانه</span>
                         </div>
                         <div class="flex items-center gap-2 mt-0.5 text-[11px] text-indigo-100/90 font-medium h-4">
                             <span id="today-date-label" class="opacity-90 font-semibold"></span>
@@ -181,7 +202,7 @@
                 </div>
             </div>
 
-            <!-- نوار خلاصه وضعیت Bento (حلقه پیشرفت + آمار سریع روزانه) -->
+            <!-- نوار خلاصه وضعیت (حلقه پیشرفت + آمار سریع روزانه) -->
             <div class="mt-3 pt-2.5 border-t border-white/15 flex items-center justify-between gap-2 text-xs">
                 <div class="flex items-center gap-2.5">
                     <div class="relative w-9 h-9 flex items-center justify-center shrink-0">
@@ -197,7 +218,7 @@
                     </div>
                 </div>
 
-                <!-- دکمه سریع مدیریت برچسب‌ها در هدر Bento -->
+                <!-- دکمه سریع مدیریت برچسب‌ها در هدر -->
                 <button id="open-tags-manager-btn" class="bg-white/15 hover:bg-white/25 border border-white/20 text-white px-3 py-1.5 rounded-xl text-[11px] font-black shrink-0 transition active:scale-95 flex items-center gap-1.5 backdrop-blur-md shadow-sm">
                     <span>🏷️</span>
                     <span data-i18n="tagsManagerBtn">برچسب‌ها</span>
@@ -282,23 +303,86 @@
             </div>
         </div>
 
-        <!-- لیست اصلی تسک‌ها -->
-        <main id="tasks-scroll-container" class="flex-1 p-3.5 overflow-y-auto no-scrollbar space-y-2.5 bg-slate-100/70 dark:bg-slate-950/60">
-            <div id="todo-list" class="space-y-2.5">
+        <!-- لیست اصلی تسک‌ها به همراه پس‌زمینه درخت رشدکننده -->
+        <main id="tasks-scroll-container" class="flex-1 p-3.5 overflow-y-auto no-scrollbar space-y-2.5 bg-slate-100/70 dark:bg-slate-950/60 relative">
+            
+            <!-- پس‌زمینه درخت پویا (از بذر و جوانه تا درخت پرشکوفه بر اساس درصد پیشرفت) -->
+            <div class="sticky top-6 inset-x-0 flex flex-col items-center justify-center pointer-events-none select-none z-0 opacity-30 dark:opacity-25 h-0 overflow-visible pt-36">
+                <svg id="growing-tree-svg" class="w-64 h-64 tree-sway" viewBox="0 0 200 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- تپه و خاک پایه (همیشه فعال) -->
+                    <ellipse cx="100" cy="200" rx="68" ry="12" fill="#10b981" fill-opacity="0.25"/>
+                    <path d="M55 200 C75 190, 125 190, 145 200 Z" fill="#047857" fill-opacity="0.5"/>
+                    <circle cx="100" cy="197" r="4.5" fill="#78350f" />
+
+                    <!-- مرحله ۱: جوانه کوچک (۱٪ تا ۲۵٪) -->
+                    <g id="tree-stage-1" class="tree-part tree-hidden">
+                        <path d="M100 198 Q100 175 100 162" stroke="#10b981" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M100 172 C85 165, 80 152, 95 156 C98 158, 100 165, 100 172 Z" fill="#34d399"/>
+                        <path d="M100 166 C115 159, 120 146, 105 150 C102 152, 100 159, 100 166 Z" fill="#10b981"/>
+                    </g>
+
+                    <!-- مرحله ۲: نهال بلندتر با چند برگ (۲۶٪ تا ۵۰٪) -->
+                    <g id="tree-stage-2" class="tree-part tree-hidden">
+                        <path d="M100 198 Q98 155 100 128" stroke="#059669" stroke-width="5.5" stroke-linecap="round"/>
+                        <path d="M100 160 Q82 148 74 138" stroke="#059669" stroke-width="3.5" stroke-linecap="round"/>
+                        <path d="M100 148 Q118 136 126 126" stroke="#059669" stroke-width="3.5" stroke-linecap="round"/>
+                        <circle cx="72" cy="136" r="12" fill="#34d399" fill-opacity="0.85"/>
+                        <circle cx="128" cy="124" r="13" fill="#10b981" fill-opacity="0.85"/>
+                        <circle cx="100" cy="120" r="16" fill="#059669" fill-opacity="0.9"/>
+                    </g>
+
+                    <!-- مرحله ۳: درخت جوان با تنه چوبی (۵۱٪ تا ۷۵٪) -->
+                    <g id="tree-stage-3" class="tree-part tree-hidden">
+                        <path d="M94 200 L97 110 L103 110 L106 200 Z" fill="#78350f"/>
+                        <path d="M100 150 L68 120" stroke="#78350f" stroke-width="4.5" stroke-linecap="round"/>
+                        <path d="M100 140 L132 110" stroke="#78350f" stroke-width="4.5" stroke-linecap="round"/>
+                        <circle cx="65" cy="115" r="22" fill="#10b981" fill-opacity="0.85"/>
+                        <circle cx="135" cy="105" r="24" fill="#059669" fill-opacity="0.85"/>
+                        <circle cx="100" cy="95" r="30" fill="#34d399" fill-opacity="0.9"/>
+                    </g>
+
+                    <!-- مرحله ۴: درخت تنومند و پربرگ (۷۶٪ تا ۹۹٪) -->
+                    <g id="tree-stage-4" class="tree-part tree-hidden">
+                        <path d="M91 200 Q95 140 96 90 L104 90 Q105 140 109 200 Z" fill="#78350f"/>
+                        <path d="M98 145 Q70 120 55 100" stroke="#78350f" stroke-width="5.5" stroke-linecap="round"/>
+                        <path d="M102 135 Q130 110 145 90" stroke="#78350f" stroke-width="5.5" stroke-linecap="round"/>
+                        <circle cx="55" cy="98" r="28" fill="#059669" fill-opacity="0.85"/>
+                        <circle cx="145" cy="92" r="28" fill="#047857" fill-opacity="0.85"/>
+                        <circle cx="78" cy="72" r="32" fill="#10b981" fill-opacity="0.9"/>
+                        <circle cx="122" cy="72" r="32" fill="#10b981" fill-opacity="0.9"/>
+                        <circle cx="100" cy="58" r="36" fill="#34d399" fill-opacity="0.95"/>
+                    </g>
+
+                    <!-- مرحله ۵: شکوفه‌ها و میوه‌های طلایی در ۱۰۰٪ پیشرفت -->
+                    <g id="tree-stage-5" class="tree-part tree-hidden">
+                        <circle cx="85" cy="50" r="5" fill="#f43f5e"/>
+                        <circle cx="118" cy="55" r="5.5" fill="#fb7185"/>
+                        <circle cx="65" cy="82" r="5" fill="#f43f5e"/>
+                        <circle cx="138" cy="80" r="5" fill="#fbbf24"/>
+                        <circle cx="100" cy="75" r="6" fill="#fbbf24"/>
+                        <circle cx="50" cy="105" r="4.5" fill="#fb7185"/>
+                        <circle cx="150" cy="102" r="5" fill="#f43f5e"/>
+                        <circle cx="92" cy="98" r="5" fill="#fbbf24"/>
+                    </g>
+                </svg>
+                <p id="tree-bg-caption" class="text-[11px] font-black text-emerald-700 dark:text-emerald-400 mt-1 tracking-wide"></p>
+            </div>
+
+            <div id="todo-list" class="space-y-2.5 relative z-10">
                 <!-- کارت‌های تسک -->
             </div>
 
             <!-- وضعیت خالی بودن لیست -->
-            <div id="empty-state" class="py-12 flex flex-col items-center justify-center text-slate-400 text-center">
+            <div id="empty-state" class="py-12 flex flex-col items-center justify-center text-slate-400 text-center relative z-10">
                 <div class="w-16 h-16 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-md flex items-center justify-center text-2xl mb-3 animate-float">
-                    ✨
+                    🌱
                 </div>
                 <p class="text-xs font-extrabold text-slate-700 dark:text-slate-300" data-i18n="emptyTitle">لیست کارهای شما خالی است</p>
-                <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1 max-w-[220px]" data-i18n="emptySub">کار جدیدی در پایین بنویسید یا با میکروفون بگویید</p>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1 max-w-[220px]" data-i18n="emptySub">کار جدیدی در پایین بنویسید تا جوانه شما رشد کند</p>
             </div>
 
             <!-- دکمه بارگذاری تنبل (Lazy Load) -->
-            <div id="load-more-container" class="hidden pt-2 text-center">
+            <div id="load-more-container" class="hidden pt-2 text-center relative z-10">
                 <button id="load-more-btn" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 text-indigo-600 dark:text-indigo-400 text-xs font-black px-4 py-2 rounded-2xl shadow-sm transition active:scale-95" data-i18n="loadMore">
                     نمایش موارد بیشتر...
                 </button>
@@ -385,21 +469,21 @@
                 <!-- دکمه ثبت تسک -->
                 <button 
                     type="submit" 
-                    class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 active:scale-90 text-white font-black p-2.5 rounded-2xl shadow-[0_4px_14px_rgba(79,70,229,0.4)] transition flex items-center justify-center shrink-0"
+                    class="bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-700 hover:to-emerald-700 active:scale-90 text-white font-black p-2.5 rounded-2xl shadow-[0_4px_14px_rgba(79,70,229,0.4)] transition flex items-center justify-center shrink-0"
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.6" d="M12 4v16m8-8H4"/></svg>
                 </button>
             </form>
 
-            <!-- فوتر کپی‌رایت و شماره نسخه -->
+            <!-- فوتر کپی‌رایت و شماره نسخه (بدون نام آرگون) -->
             <div class="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400 font-medium">
                 <div class="flex items-center gap-1.5">
-                    <span class="font-bold text-slate-500 dark:text-slate-400">© Argon Todo</span>
+                    <span class="font-bold text-slate-500 dark:text-slate-400">© Smart Todo</span>
                     <span>•</span>
                     <span data-i18n="footerCloudSync">همگام‌سازی ابری هوشمند</span>
                 </div>
                 <div class="flex items-center gap-1 bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-mono text-[9px] border border-indigo-200/60 dark:border-slate-700 font-black">
-                    <span>v3.0.0 Argon</span>
+                    <span>v3.1.0</span>
                 </div>
             </div>
         </footer>
@@ -407,7 +491,7 @@
         <!-- ۱. مودال گزارشات و نمودارها -->
         <div id="reports-modal" class="hidden fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-3">
             <div class="bg-white dark:bg-slate-900 rounded-[32px] w-full max-w-sm max-h-[88vh] flex flex-col shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800">
-                <div class="p-4 argon-header text-white flex items-center justify-between">
+                <div class="p-4 app-header text-white flex items-center justify-between">
                     <h3 class="font-black text-sm flex items-center gap-2" data-i18n="reportsTitle">📊 گزارش تحلیلی عملکرد</h3>
                     <button id="close-reports-btn" class="w-7 h-7 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center text-white text-xs font-bold transition">✕</button>
                 </div>
@@ -484,6 +568,57 @@
             </div>
         </div>
 
+        <!-- ۳.۵. مودال ویرایش کار و برچسب‌های آن -->
+        <div id="edit-task-modal" class="hidden fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-3">
+            <div class="bg-white dark:bg-slate-900 rounded-[32px] w-full max-w-sm p-4 shadow-2xl text-xs space-y-3.5 border border-slate-100 dark:border-slate-800">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <h3 class="font-black text-sm text-slate-800 dark:text-white flex items-center gap-2" data-i18n="editTaskModalTitle">✏️ ویرایش کار و برچسب‌ها</h3>
+                    <button id="close-edit-task-btn" class="w-7 h-7 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 flex items-center justify-center text-slate-500 font-bold">✕</button>
+                </div>
+
+                <div class="space-y-2.5">
+                    <div>
+                        <label class="block font-extrabold text-slate-700 dark:text-slate-300 mb-1" data-i18n="editTaskTitleLabel">عنوان کار:</label>
+                        <input type="text" id="edit-task-title-input" dir="auto" class="w-full bg-slate-50 dark:bg-slate-800 dark:text-white border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 outline-none font-bold text-xs focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block font-extrabold text-slate-700 dark:text-slate-300 mb-1" data-i18n="editTaskPrioLabel">اولویت:</label>
+                        <div class="grid grid-cols-3 gap-1.5" id="edit-task-prio-group">
+                            <button type="button" data-prio="normal" class="edit-prio-btn py-1.5 rounded-xl border text-[11px] font-black transition" data-i18n="prioNormal">عادی</button>
+                            <button type="button" data-prio="high" class="edit-prio-btn py-1.5 rounded-xl border text-[11px] font-black transition" data-i18n="prioHigh">مهم ⚡</button>
+                            <button type="button" data-prio="urgent" class="edit-prio-btn py-1.5 rounded-xl border text-[11px] font-black transition" data-i18n="prioUrgent">فوری 🔥</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="font-extrabold text-slate-700 dark:text-slate-300" data-i18n="editTaskTagsLabel">برچسب‌های این کار (کلیک برای انتخاب/حذف):</label>
+                        </div>
+                        <div id="edit-task-tags-list" class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-2 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+                            <!-- توسط JS پر می‌شود -->
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-extrabold text-slate-600 dark:text-slate-400 mb-1" data-i18n="estMinLabel">تخمین زمان (دقیقه):</label>
+                            <input type="number" id="edit-task-est-input" placeholder="45" class="w-full bg-slate-50 dark:bg-slate-800 dark:text-white border border-slate-300 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs outline-none font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-extrabold text-slate-600 dark:text-slate-400 mb-1" data-i18n="dueDateLabel">تاریخ سررسید:</label>
+                            <input type="date" id="edit-task-due-input" class="w-full bg-slate-50 dark:bg-slate-800 dark:text-white border border-slate-300 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                    <button id="cancel-edit-task-btn" type="button" class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 py-2.5 rounded-xl font-black transition" data-i18n="cancelBtn">انصراف</button>
+                    <button id="save-edit-task-btn" type="button" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-black shadow-md transition" data-i18n="saveChangesBtn">ذخیره تغییرات</button>
+                </div>
+            </div>
+        </div>
+
         <!-- ۴. مودال حساب کاربری و سینک ابری -->
         <div id="user-modal" class="hidden fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-3">
             <div class="bg-white dark:bg-slate-900 rounded-[32px] w-full max-w-xs p-4 shadow-2xl text-xs space-y-3.5 border border-slate-100 dark:border-slate-800">
@@ -551,7 +686,7 @@
                 dateTo: "تا:",
                 clearFilter: "پاکسازی",
                 emptyTitle: "لیست کارهای شما خالی است",
-                emptySub: "کار جدیدی در پایین بنویسید یا با میکروفون بگویید",
+                emptySub: "کار جدیدی در پایین بنویسید تا جوانه شما رشد کند",
                 loadMore: "نمایش موارد بیشتر...",
                 tagsLabel: "برچسب‌ها:",
                 noTagSelected: "هیچ برچسبی انتخاب نشده",
@@ -617,7 +752,20 @@
                 timeSavedToast: "⏱️ زمان واقعی ثبت شد",
                 loginSuccessToast: "ورود با گوگل انجام شد",
                 roomConnectedToast: "متصل به شناسه:",
-                logoutToast: "خروج انجام شد"
+                logoutToast: "خروج انجام شد",
+                editTaskModalTitle: "✏️ ویرایش کار و برچسب‌ها",
+                editTaskTitleLabel: "عنوان کار:",
+                editTaskPrioLabel: "اولویت:",
+                editTaskTagsLabel: "برچسب‌های این کار (کلیک برای انتخاب/حذف):",
+                saveChangesBtn: "ذخیره تغییرات",
+                taskUpdatedToast: "✅ تغییرات کار ذخیره شد",
+                editBtnTitle: "ویرایش کار و برچسب‌ها",
+                stage0: "🌰 بذر آماده کاشت",
+                stage1: "🌱 جوانه نوپا",
+                stage2: "🌿 نهال در حال رشد",
+                stage3: "🌳 درخت جوان",
+                stage4: "🌲 درخت تنومند",
+                stage5: "🌸 درخت پرشکوفه کامل"
             },
             en: {
                 appTitle: "My Daily Tasks",
@@ -644,7 +792,7 @@
                 dateTo: "To:",
                 clearFilter: "Reset",
                 emptyTitle: "Your task list is empty",
-                emptySub: "Type a new task below or use voice input",
+                emptySub: "Add a task below to help your sprout grow into a tree",
                 loadMore: "Load more tasks...",
                 tagsLabel: "Tags:",
                 noTagSelected: "No tags selected",
@@ -710,7 +858,20 @@
                 timeSavedToast: "⏱️ Actual time saved",
                 loginSuccessToast: "Signed in with Google",
                 roomConnectedToast: "Connected to room:",
-                logoutToast: "Logged out"
+                logoutToast: "Logged out",
+                editTaskModalTitle: "✏️ Edit Task & Tags",
+                editTaskTitleLabel: "Task Title:",
+                editTaskPrioLabel: "Priority:",
+                editTaskTagsLabel: "Task Tags (Click to toggle):",
+                saveChangesBtn: "Save Changes",
+                taskUpdatedToast: "✅ Task updated",
+                editBtnTitle: "Edit task & tags",
+                stage0: "🌰 Seed in soil",
+                stage1: "🌱 Tiny Sprout",
+                stage2: "🌿 Growing Sapling",
+                stage3: "🌳 Young Tree",
+                stage4: "🌲 Lush Tree",
+                stage5: "🌸 Blooming Tree"
             }
         };
 
@@ -750,6 +911,9 @@
         let activeSyncId = localStorage.getItem(ACTIVE_SYNC_ID_KEY) || null;
         let cloudUnsubscribe = null;
         let selectedTaskForActualTime = null;
+        let selectedTaskForEdit = null;
+        let tempEditTags = new Set();
+        let tempEditPriority = 'normal';
         let chartInstance = null;
 
         let activePomodoroTask = null;
@@ -805,6 +969,7 @@
         const closeTagsManagerBtn = document.getElementById('close-tags-manager-btn');
         const tagsManagerModal = document.getElementById('tags-manager-modal');
         const actualTimeModal = document.getElementById('actual-time-modal');
+        const editTaskModal = document.getElementById('edit-task-modal');
         const userModal = document.getElementById('user-modal');
         const closeUserModalBtn = document.getElementById('close-user-modal-btn');
         const loggedInSection = document.getElementById('logged-in-section');
@@ -939,6 +1104,78 @@
             if (tagsBadge) {
                 tagsBadge.textContent = projects.length;
             }
+
+            updateGrowingTree(percent, total);
+        }
+
+        function updateGrowingTree(percent, totalTasks) {
+            const s1 = document.getElementById('tree-stage-1');
+            const s2 = document.getElementById('tree-stage-2');
+            const s3 = document.getElementById('tree-stage-3');
+            const s4 = document.getElementById('tree-stage-4');
+            const s5 = document.getElementById('tree-stage-5');
+            const badge = document.getElementById('tree-stage-badge');
+            const caption = document.getElementById('tree-bg-caption');
+
+            const setVisible = (el, show) => {
+                if (!el) return;
+                if (show) {
+                    el.classList.remove('tree-hidden');
+                    el.classList.add('tree-visible');
+                } else {
+                    el.classList.remove('tree-visible');
+                    el.classList.add('tree-hidden');
+                }
+            };
+
+            let stageKey = 'stage0';
+            if (totalTasks === 0 || percent === 0) {
+                // اگر حداقل یک تسک وجود دارد، جوانه اولیه را نشان بده تا حس زندگی بدهد
+                setVisible(s1, totalTasks > 0);
+                setVisible(s2, false);
+                setVisible(s3, false);
+                setVisible(s4, false);
+                setVisible(s5, false);
+                stageKey = totalTasks > 0 ? 'stage1' : 'stage0';
+            } else if (percent <= 25) {
+                setVisible(s1, true);
+                setVisible(s2, false);
+                setVisible(s3, false);
+                setVisible(s4, false);
+                setVisible(s5, false);
+                stageKey = 'stage1';
+            } else if (percent <= 50) {
+                setVisible(s1, false);
+                setVisible(s2, true);
+                setVisible(s3, false);
+                setVisible(s4, false);
+                setVisible(s5, false);
+                stageKey = 'stage2';
+            } else if (percent <= 75) {
+                setVisible(s1, false);
+                setVisible(s2, false);
+                setVisible(s3, true);
+                setVisible(s4, false);
+                setVisible(s5, false);
+                stageKey = 'stage3';
+            } else if (percent < 100) {
+                setVisible(s1, false);
+                setVisible(s2, false);
+                setVisible(s3, false);
+                setVisible(s4, true);
+                setVisible(s5, false);
+                stageKey = 'stage4';
+            } else {
+                setVisible(s1, false);
+                setVisible(s2, false);
+                setVisible(s3, false);
+                setVisible(s4, true);
+                setVisible(s5, true);
+                stageKey = 'stage5';
+            }
+
+            if (badge) badge.textContent = t(stageKey);
+            if (caption) caption.textContent = `${t(stageKey)} (${percent}%)`;
         }
 
         // مدیریت منوهای کشویی و بستن خودکار با کلیک بیرون
@@ -1345,6 +1582,15 @@
                     actions.appendChild(archBtn);
                 }
 
+                // دکمه ویرایش کار و برچسب‌های آن
+                const editBtn = document.createElement('button');
+                editBtn.type = 'button';
+                editBtn.title = t('editBtnTitle');
+                editBtn.className = 'w-6 h-6 flex items-center justify-center text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 rounded-lg transition text-xs';
+                editBtn.innerHTML = '✏️';
+                editBtn.onclick = () => openEditTaskModal(item);
+                actions.appendChild(editBtn);
+
                 const delBtn = document.createElement('button');
                 delBtn.className = 'w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition text-xs';
                 delBtn.innerHTML = '✕';
@@ -1398,6 +1644,19 @@
                         };
                         tagsWrapper.appendChild(badge);
                     });
+
+                    // دکمه کوچک + برای افزودن/ویرایش سریع برچسب روی خود کارت
+                    const quickEditTagBtn = document.createElement('button');
+                    quickEditTagBtn.type = 'button';
+                    quickEditTagBtn.title = t('editBtnTitle');
+                    quickEditTagBtn.className = 'px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700/70 hover:bg-indigo-100 text-slate-500 dark:text-slate-300 text-[10px] font-bold transition';
+                    quickEditTagBtn.textContent = '+🏷️';
+                    quickEditTagBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        openEditTaskModal(item);
+                    };
+                    tagsWrapper.appendChild(quickEditTagBtn);
+
                     bottomRow.appendChild(tagsWrapper);
 
                     if (hasTimeMeta) {
@@ -1722,6 +1981,88 @@
                 actualTimeModal.classList.add('hidden');
                 showNotification(t('timeSavedToast'));
             }
+        };
+
+        function renderEditModalPriorityUI() {
+            document.querySelectorAll('.edit-prio-btn').forEach(btn => {
+                const p = btn.getAttribute('data-prio');
+                if (p === tempEditPriority) {
+                    btn.className = 'edit-prio-btn py-1.5 rounded-xl border text-[11px] font-black transition bg-indigo-600 text-white border-indigo-600 shadow-xs';
+                } else {
+                    btn.className = 'edit-prio-btn py-1.5 rounded-xl border text-[11px] font-black transition bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+                }
+            });
+        }
+
+        document.querySelectorAll('.edit-prio-btn').forEach(btn => {
+            btn.onclick = () => {
+                tempEditPriority = btn.getAttribute('data-prio') || 'normal';
+                renderEditModalPriorityUI();
+            };
+        });
+
+        function renderEditModalTagsList() {
+            const container = document.getElementById('edit-task-tags-list');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (projects.length === 0) {
+                container.innerHTML = `<span class="text-slate-400 text-[11px]">${t('noTagDefined')}</span>`;
+                return;
+            }
+
+            projects.forEach(p => {
+                const isSelected = tempEditTags.has(p.name);
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.dir = 'auto';
+                chip.className = `px-2.5 py-1 rounded-xl text-[11px] font-black transition border flex items-center gap-1 ${
+                    isSelected
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
+                }`;
+                chip.innerHTML = `<span>#${p.name}</span>${isSelected ? '<span>✓</span>' : ''}`;
+                chip.onclick = () => {
+                    if (tempEditTags.has(p.name)) tempEditTags.delete(p.name);
+                    else tempEditTags.add(p.name);
+                    renderEditModalTagsList();
+                };
+                container.appendChild(chip);
+            });
+        }
+
+        function openEditTaskModal(task) {
+            selectedTaskForEdit = task;
+            document.getElementById('edit-task-title-input').value = task.title || '';
+            document.getElementById('edit-task-est-input').value = task.estMinutes || '';
+            document.getElementById('edit-task-due-input').value = task.dueDate || '';
+            tempEditPriority = task.priority || 'normal';
+            tempEditTags = new Set(task.tags || []);
+
+            renderEditModalPriorityUI();
+            renderEditModalTagsList();
+            editTaskModal.classList.remove('hidden');
+        }
+
+        document.getElementById('close-edit-task-btn').onclick = () => editTaskModal.classList.add('hidden');
+        document.getElementById('cancel-edit-task-btn').onclick = () => editTaskModal.classList.add('hidden');
+        document.getElementById('save-edit-task-btn').onclick = () => {
+            if (!selectedTaskForEdit) return;
+            const newTitle = document.getElementById('edit-task-title-input').value.trim();
+            if (newTitle) selectedTaskForEdit.title = newTitle;
+
+            selectedTaskForEdit.priority = tempEditPriority;
+            selectedTaskForEdit.tags = Array.from(tempEditTags);
+
+            const estVal = document.getElementById('edit-task-est-input').value;
+            selectedTaskForEdit.estMinutes = estVal ? parseInt(estVal) : null;
+            selectedTaskForEdit.dueDate = document.getElementById('edit-task-due-input').value || null;
+
+            saveLocalData();
+            renderProjectsBar();
+            renderUI();
+            editTaskModal.classList.add('hidden');
+            showNotification(t('taskUpdatedToast'));
         };
 
         openReportsBtn.onclick = () => {
