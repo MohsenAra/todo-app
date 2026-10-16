@@ -287,7 +287,7 @@
                     <span class="text-slate-500 font-bold">همگام‌سازی ابری</span>
                 </div>
                 <div class="flex items-center gap-1 bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-mono text-[9px] border border-slate-200/60 font-bold">
-                    <span>v1.8.0</span>
+                    <span>v1.8.1</span>
                 </div>
             </div>
         </footer>
@@ -601,6 +601,18 @@
                 langToggleBtn.textContent = lang === 'fa' ? 'EN' : 'فا';
             }
 
+            // تنظیم موقعیت دراپ‌داون متناسب با LTR و RTL تا از کادر بیرون نزند
+            const headerDropdown = document.getElementById('header-menu-dropdown');
+            if (headerDropdown) {
+                if (lang === 'fa') {
+                    headerDropdown.classList.remove('right-0');
+                    headerDropdown.classList.add('left-0');
+                } else {
+                    headerDropdown.classList.remove('left-0');
+                    headerDropdown.classList.add('right-0');
+                }
+            }
+
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const k = el.getAttribute('data-i18n');
                 if (k && i18n[lang][k]) {
@@ -683,49 +695,44 @@
         const taskEstMinutes = document.getElementById('task-est-minutes');
         const taskDueDate = document.getElementById('task-due-date');
         const langToggleBtn = document.getElementById('lang-toggle-btn');
-        function applyLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem(LANG_STORAGE_KEY, lang);
-            document.documentElement.lang = lang;
-            document.documentElement.dir = (lang === 'fa') ? 'rtl' : 'ltr';
+        const headerMenuBtn = document.getElementById('header-menu-btn');
+        const headerMenuDropdown = document.getElementById('header-menu-dropdown');
+        const openReportsBtn = document.getElementById('open-reports-btn');
+        const closeReportsBtn = document.getElementById('close-reports-btn');
+        const reportsModal = document.getElementById('reports-modal');
+        const notifyPermBtn = document.getElementById('notify-perm-btn');
+        const openTagsManagerBtn = document.getElementById('open-tags-manager-btn');
+        const closeTagsManagerBtn = document.getElementById('close-tags-manager-btn');
+        const tagsManagerModal = document.getElementById('tags-manager-modal');
+        const actualTimeModal = document.getElementById('actual-time-modal');
+        const userModal = document.getElementById('user-modal');
+        const closeUserModalBtn = document.getElementById('close-user-modal-btn');
+        const loggedInSection = document.getElementById('logged-in-section');
+        const loginOptionsSection = document.getElementById('login-options-section');
+        const googleLoginBtn = document.getElementById('google-login-btn');
+        const disconnectBtn = document.getElementById('disconnect-btn');
+        const keySyncForm = document.getElementById('key-sync-form');
+        const customSyncKeyInput = document.getElementById('custom-sync-key');
+        const pomodoroBar = document.getElementById('pomodoro-bar');
+        const pomoTaskName = document.getElementById('pomo-task-name');
+        const pomoTimerDisplay = document.getElementById('pomo-timer-display');
+        const pomoPauseBtn = document.getElementById('pomo-pause-btn');
+        const pomoStopBtn = document.getElementById('pomo-stop-btn');
+        const voiceInputBtn = document.getElementById('voice-input-btn');
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        const loadMoreContainer = document.getElementById('load-more-container');
 
-            const langToggleBtn = document.getElementById('lang-toggle-btn');
-            if (langToggleBtn) {
-                langToggleBtn.textContent = lang === 'fa' ? 'EN' : 'فا';
-            }
-
-            // تنظیم موقعیت دراپ‌داون متناسب با LTR و RTL تا از کادر بیرون نزند
-            const headerDropdown = document.getElementById('header-menu-dropdown');
-            if (headerDropdown) {
-                if (lang === 'fa') {
-                    headerDropdown.classList.remove('right-0');
-                    headerDropdown.classList.add('left-0');
-                } else {
-                    headerDropdown.classList.remove('left-0');
-                    headerDropdown.classList.add('right-0');
-                }
-            }
-
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const k = el.getAttribute('data-i18n');
-                if (k && i18n[lang][k]) {
-                    el.textContent = i18n[lang][k];
+        // منوی کشویی هدر
+        if (headerMenuBtn && headerMenuDropdown) {
+            headerMenuBtn.onclick = (e) => {
+                e.stopPropagation();
+                headerMenuDropdown.classList.toggle('hidden');
+            };
+            document.addEventListener('click', (e) => {
+                if (!headerMenuDropdown.contains(e.target) && e.target !== headerMenuBtn) {
+                    headerMenuDropdown.classList.add('hidden');
                 }
             });
-
-            document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-                const k = el.getAttribute('data-i18n-ph');
-                if (k && i18n[lang][k]) {
-                    el.placeholder = i18n[lang][k];
-                }
-            });
-
-            if (recognizer) {
-                recognizer.lang = (lang === 'fa') ? 'fa-IR' : 'en-US';
-            }
-
-            renderProjectsBar();
-            renderUI();
         }
 
         // دکمه باز و بسته کردن سرچ
@@ -795,6 +802,110 @@
             }
         }
 
+        function toggleTagSelection(tagName) {
+            if (selectedTagsForNewTask.has(tagName)) {
+                selectedTagsForNewTask.delete(tagName);
+            } else {
+                selectedTagsForNewTask.add(tagName);
+            }
+            updateTagFormUI();
+        }
+
+        function updateTagFormUI() {
+            if (selectedTagsForNewTask.size === 0) {
+                selectedTagsSummary.textContent = t('noTagSelected');
+            } else {
+                selectedTagsSummary.textContent = Array.from(selectedTagsForNewTask).map(tg => `#${tg}`).join(' ');
+            }
+
+            const hasTimedTag = Array.from(selectedTagsForNewTask).some(tagName => {
+                const p = projects.find(prj => prj.name === tagName);
+                return p && p.timeTracking;
+            });
+
+            if (hasTimedTag) {
+                timeTrackingFields.classList.remove('hidden');
+            } else {
+                timeTrackingFields.classList.add('hidden');
+            }
+
+            renderProjectsBar();
+        }
+
+        function renderProjectsBar() {
+            projectsBar.innerHTML = '';
+
+            // چیپ ویژه «همه کارها»
+            const allBtn = document.createElement('button');
+            const isAllActive = (currentProjectFilter === ALL_PROJECTS_TAB_KEY);
+            allBtn.className = `px-3 py-1.5 rounded-xl font-extrabold transition shrink-0 text-xs flex items-center gap-1.5 shadow-sm active:scale-95 ${
+                isAllActive ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+            }`;
+            const activeCount = todos.filter(t => !t.done && !t.archived).length;
+            allBtn.innerHTML = `<span>${t('allTasksTab')}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isAllActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'} font-mono">${activeCount}</span>`;
+            allBtn.onclick = () => {
+                currentProjectFilter = ALL_PROJECTS_TAB_KEY;
+                renderProjectsBar();
+                renderUI();
+            };
+            projectsBar.appendChild(allBtn);
+
+            // محاسبه برچسب‌های پرکاربرد
+            const tagUsageCounts = {};
+            todos.forEach(t => {
+                (t.tags || []).forEach(tg => {
+                    tagUsageCounts[tg] = (tagUsageCounts[tg] || 0) + 1;
+                });
+            });
+
+            const sortedProjects = [...projects].sort((a, b) => {
+                return (tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0);
+            });
+
+            const quickProjects = sortedProjects.slice(0, 4);
+            const otherProjects = sortedProjects.slice(4);
+
+            quickProjects.forEach(p => {
+                const pBtn = document.createElement('button');
+                const isSelected = (currentProjectFilter === p.name);
+                pBtn.className = `px-3 py-1.5 rounded-xl font-extrabold transition shrink-0 text-xs flex items-center gap-1.5 shadow-sm active:scale-95 ${
+                    isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                }`;
+                const pCount = todos.filter(t => !t.done && !t.archived && (t.tags || []).includes(p.name)).length;
+                pBtn.innerHTML = `<span>#${p.name}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'} font-mono">${pCount}</span>`;
+                pBtn.onclick = () => {
+                    currentProjectFilter = p.name;
+                    renderProjectsBar();
+                    renderUI();
+                };
+                projectsBar.appendChild(pBtn);
+            });
+
+            // به‌روزرسانی بخش فرم ثبت تسک (چیپ‌ها و کمبوباکس)
+            quickTagsContainer.innerHTML = '';
+            quickProjects.forEach(p => {
+                const isChosen = selectedTagsForNewTask.has(p.name);
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = `px-2.5 py-1 rounded-xl text-[11px] font-black transition active:scale-95 border ${
+                    isChosen 
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' 
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'
+                }`;
+                chip.textContent = `#${p.name}`;
+                chip.onclick = () => toggleTagSelection(p.name);
+                quickTagsContainer.appendChild(chip);
+            });
+
+            otherTagsSelect.innerHTML = `<option value="">${t('otherTagsOpt')}</option>`;
+            otherProjects.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.name;
+                opt.textContent = `#${p.name}`;
+                otherTagsSelect.appendChild(opt);
+            });
+        }
+
         otherTagsSelect.onchange = (e) => {
             if (e.target.value) {
                 toggleTagSelection(e.target.value);
@@ -835,6 +946,11 @@
             }
 
             const visibleItems = filtered.slice(0, displayLimit);
+            if (filtered.length > displayLimit) {
+                loadMoreContainer.classList.remove('hidden');
+            } else {
+                loadMoreContainer.classList.add('hidden');
+            }
 
             visibleItems.forEach(item => {
                 const card = document.createElement('div');
@@ -973,6 +1089,13 @@
                 card.appendChild(bottomRow);
                 todoList.appendChild(card);
             });
+        }
+
+        if (loadMoreBtn) {
+            loadMoreBtn.onclick = () => {
+                displayLimit += 20;
+                renderUI();
+            };
         }
 
         addForm.onsubmit = (e) => {
@@ -1344,6 +1467,32 @@
             archiveDateTo = null;
             renderUI();
         };
+
+        function listenToCloud(id) {
+            if (!db || !id) return;
+            if (cloudUnsubscribe) cloudUnsubscribe();
+
+            const userDocRef = doc(db, 'users', id);
+            cloudUnsubscribe = onSnapshot(userDocRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    if (data.todos) {
+                        todos = data.todos;
+                        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
+                    }
+                    if (data.projects) {
+                        projects = data.projects;
+                        localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+                    }
+                    renderProjectsBar();
+                    renderUI();
+                    updateSyncUI(true, t('syncOnline'));
+                }
+            }, (error) => {
+                console.error("Snapshot error:", error);
+                updateSyncUI(false, t('syncError'));
+            });
+        }
 
         authActionBtn.onclick = () => userModal.classList.remove('hidden');
         if (userAvatarBtn) {
