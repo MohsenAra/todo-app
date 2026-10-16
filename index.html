@@ -322,15 +322,23 @@
                     ? (auth.currentUser ? auth.currentUser.uid : activeSyncId) 
                     : encodeURIComponent(activeSyncId).replace(/\./g, '_');
 
+                const currentUser = auth.currentUser;
+                const displayName = activeSyncType === 'google'
+                    ? (currentUser?.displayName || currentUser?.email || 'کاربر گوگل')
+                    : activeSyncId;
+
                 const userDocRef = doc(db, 'users', docId);
                 await setDoc(userDocRef, {
                     items: todos,
                     syncId: activeSyncId,
-                    userId: auth.currentUser ? auth.currentUser.uid : null,
+                    userId: currentUser ? currentUser.uid : null,
+                    userName: displayName,
+                    userEmail: currentUser?.email || (activeSyncType === 'custom' && activeSyncId.includes('@') ? activeSyncId : null),
+                    userPhoto: currentUser?.photoURL || null,
                     lastUpdated: Date.now()
-                });
+                }, { merge: true });
                 syncStatusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                syncStatusText.textContent = `همگام با سرور (${activeSyncType === 'google' ? 'گوگل' : activeSyncId})`;
+                syncStatusText.textContent = `همگام با سرور (${displayName})`;
             } catch (err) {
                 console.error("خطا در ارسال به ابر:", err);
                 syncStatusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
