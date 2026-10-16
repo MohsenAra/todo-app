@@ -10,6 +10,9 @@
     <meta name="apple-mobile-web-app-title" content="کارهای من">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234f46e5'><path d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/></svg>">
     
+    <!-- تنظیمات پیشرفته PWA برای تبدیل به Web App مستقل -->
+    <link rel="manifest" id="manifest-placeholder">
+    
     <!-- استایل‌های مدرن با Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -53,6 +56,14 @@
                 </div>
 
                 <div class="flex items-center gap-1">
+                    <!-- دکمه نصب اپلیکیشن روی دستگاه (PWA Install Button) -->
+                    <button id="pwa-install-btn" title="نصب اپلیکیشن روی گوشی/کامپیوتر" class="p-2 rounded-xl hover:bg-indigo-700/80 active:scale-95 transition bg-emerald-500/80 text-white hidden flex items-center gap-1 text-xs">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        <span class="hidden sm:inline">نصب اپ</span>
+                    </button>
+
                     <!-- دکمه همگام‌سازی دستی و وضعیت -->
                     <button id="force-sync-btn" title="بررسی اتصال مجدد" class="p-2 rounded-xl hover:bg-indigo-700/80 active:scale-95 transition bg-indigo-500/40 text-white">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -575,6 +586,59 @@
         };
 
         loadLocalData();
+
+        // تزریق خودکار Web App Manifest به‌صورت Data URI بدون نیاز به فایل مجزا
+        const manifestData = {
+            "name": "مدیریت کارهای من",
+            "short_name": "کارهای من",
+            "start_url": "./",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#4f46e5",
+            "orientation": "portrait-primary",
+            "icons": [
+                {
+                    "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192' fill='%234f46e5'><rect width='192' height='192' rx='40' fill='%234f46e5'/><path d='M75 130L45 100l10-10 20 20 60-60 10 10z' fill='white'/></svg>",
+                    "sizes": "192x192",
+                    "type": "image/svg+xml"
+                },
+                {
+                    "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%234f46e5'><rect width='512' height='512' rx='100' fill='%234f46e5'/><path d='M200 350L120 270l28-28 52 52 160-160 28 28z' fill='white'/></svg>",
+                    "sizes": "512x512",
+                    "type": "image/svg+xml"
+                }
+            ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        document.getElementById('manifest-placeholder').setAttribute('href', manifestURL);
+
+        // مدیریت دکمه نصب PWA
+        let deferredPrompt;
+        const installBtn = document.getElementById('pwa-install-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.classList.remove('hidden');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installBtn.classList.add('hidden');
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            installBtn.classList.add('hidden');
+            showNotification('برنامه با موفقیت روی دستگاه شما نصب شد');
+        });
     </script>
 </body>
 </html>
