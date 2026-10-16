@@ -427,8 +427,9 @@
                 } else if (activeSyncId && activeSyncType === 'custom') {
                     startRealtimeSync(activeSyncId, activeSyncId, 'custom');
                 } else {
-                    // اتصال پیش‌فرض به شناسه مشترک عمومی پروژه
-                    startRealtimeSync(DEFAULT_GLOBAL_ID, 'شناسه عمومی', 'custom');
+                    // کاربر خارج شده و شناسه ندارد؛ اطلاعات را ریست نگه می‌داریم
+                    syncStatusDot.className = "w-2.5 h-2.5 rounded-full bg-slate-400";
+                    syncStatusText.textContent = "آفلاین (قطع اتصال)";
                 }
             });
         } catch (e) {
@@ -488,6 +489,11 @@
             syncStatusText.textContent = "آفلاین (قطع اتصال)";
             userModal.classList.add('hidden');
             showNotification('خروج انجام شد و تسک‌ها پاک شدند');
+
+            // ریلود خودکار صفحه پس از خروج برای پاک‌سازی قطعی وضعیت برنامه
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
         }
 
         forceSyncBtn.onclick = () => {
