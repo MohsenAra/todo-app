@@ -5,6 +5,7 @@
     <title>مدیریت هوشمند کارها و پروژه‌ها</title>
     <!-- بارگذاری کتابخانه Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="id-manifest" id="manifest-placeholder">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap');
@@ -49,6 +50,12 @@
                 </div>
 
                 <div class="flex items-center gap-1.5">
+                    <!-- دکمه صفحه گزارش و نمودارها -->
+                    <button id="open-reports-btn" title="مشاهده آمار و گزارش نموداری" class="p-2 rounded-xl bg-indigo-500/50 hover:bg-indigo-500 text-white transition active:scale-95 flex items-center gap-1 text-xs font-semibold">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                        <span class="hidden sm:inline">گزارش</span>
+                    </button>
+
                     <!-- دکمه نصب اپلیکیشن PWA -->
                     <button id="pwa-install-btn" title="نصب اپلیکیشن" class="hidden p-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white transition flex items-center gap-1 text-xs font-bold">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
@@ -252,80 +259,92 @@
             </div>
         </div>
 
-        <!-- مودال مدیریت جامع برچسب‌ها (لیست کامل، افزودن، ویرایش و حذف) -->
-        <div id="tags-manager-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-            <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl flex flex-col max-h-[85vh]">
+        <!-- مودال گزارش و دیاگرام‌های تحلیلی -->
+        <div id="reports-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+            <div class="bg-white rounded-3xl p-4 sm:p-5 w-full max-w-lg shadow-2xl flex flex-col max-h-[92vh]">
+                <!-- هدر مودال گزارش -->
                 <div class="flex items-center justify-between border-b pb-3 mb-3 shrink-0">
                     <div class="flex items-center gap-2">
-                        <span class="text-base">🏷️</span>
-                        <h3 class="font-bold text-slate-800 text-sm">مدیریت برچسب‌ها و پروژه‌ها</h3>
+                        <span class="text-xl">📊</span>
+                        <div>
+                            <h3 class="font-extrabold text-slate-800 text-sm">داشبورد آمار و گزارش نموداری</h3>
+                            <p class="text-[10px] text-slate-400 mt-0.5">تحلیل عملکرد، میزان پیشرفت و زمان‌بندی پروژه‌ها</p>
+                        </div>
                     </div>
-                    <button id="close-tags-manager-btn" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <button id="close-reports-btn" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
 
-                <!-- فرم افزودن برچسب نو در بالای مودال -->
-                <form id="manager-add-tag-form" class="space-y-2.5 p-3 bg-slate-50 border border-slate-200 rounded-2xl mb-3 shrink-0">
-                    <div>
-                        <input 
-                            type="text" 
-                            id="manager-new-tag-name" 
-                            placeholder="نام برچسب جدید (مثلاً: شرکت، کتاب)" 
-                            class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            required
-                        >
+                <!-- محتوای قابل اسکرول گزارش‌ها -->
+                <div class="flex-1 overflow-y-auto no-scrollbar space-y-4 pr-0.5">
+                    <!-- کارت‌های شاخص عملکرد (KPI Cards) -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <div class="bg-slate-50 border border-slate-200/80 p-2.5 rounded-2xl text-center">
+                            <span class="text-[10px] font-medium text-slate-400">کل برنامه‌ها</span>
+                            <p id="kpi-total-tasks" class="text-lg font-black text-slate-800 mt-0.5">0</p>
+                        </div>
+                        <div class="bg-emerald-50 border border-emerald-200/80 p-2.5 rounded-2xl text-center">
+                            <span class="text-[10px] font-medium text-emerald-600">اجرا شده‌ها</span>
+                            <p id="kpi-completed-tasks" class="text-lg font-black text-emerald-700 mt-0.5">0</p>
+                        </div>
+                        <div class="bg-indigo-50 border border-indigo-200/80 p-2.5 rounded-2xl text-center">
+                            <span class="text-[10px] font-medium text-indigo-600">درصد موفقیت</span>
+                            <p id="kpi-completion-rate" class="text-lg font-black text-indigo-700 mt-0.5">0%</p>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-200/80 p-2.5 rounded-2xl text-center">
+                            <span class="text-[10px] font-medium text-amber-600">آرشیو شده</span>
+                            <p id="kpi-archived-tasks" class="text-lg font-black text-amber-700 mt-0.5">0</p>
+                        </div>
                     </div>
-                    <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-xl border border-slate-200">
-                        <input type="checkbox" id="manager-new-tag-req-time" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                        <span class="text-[11px] text-slate-700 font-medium">نیاز به تخمین زمان و مهلت دارد (⏱️)</span>
-                    </label>
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold py-2 rounded-xl transition text-xs shadow-sm flex items-center justify-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        <span>ثبت برچسب جدید</span>
-                    </button>
-                </form>
 
-                <!-- لیست کامل برچسب‌های موجود با اسکرول داخلی -->
-                <div class="flex-1 overflow-y-auto no-scrollbar space-y-2 pr-0.5" id="tags-manager-list">
-                    <!-- به صورت پویا با جاوااسکریپت پر می‌شود -->
-                </div>
-            </div>
-        </div>
+                    <!-- بخش مقایسه مجموع زمان تخمین در برابر زمان واقعی -->
+                    <div id="time-kpi-container" class="bg-indigo-900 text-white p-3 rounded-2xl shadow-sm hidden">
+                        <div class="flex items-center justify-between text-xs mb-2">
+                            <span class="font-bold flex items-center gap-1.5">
+                                <span>⏱️ وضعیت زمان‌بندی کارها</span>
+                            </span>
+                            <span id="time-accuracy-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold"></span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-center text-xs">
+                            <div class="bg-white/10 rounded-xl p-2">
+                                <span class="text-[10px] text-indigo-200">مجموع زمان تخمینی</span>
+                                <p id="kpi-est-time" class="font-bold text-sm text-white mt-0.5">0 دقیقه</p>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-2">
+                                <span class="text-[10px] text-indigo-200">مجموع زمان واقعی صرف‌شده</span>
+                                <p id="kpi-actual-time" class="font-bold text-sm text-white mt-0.5">0 دقیقه</p>
+                            </div>
+                        </div>
+                    </div>
 
-        <!-- مودال ویرایش برچسب تکی -->
-        <div id="manage-project-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-            <div class="bg-white rounded-3xl p-5 w-full max-w-xs shadow-2xl space-y-3.5">
-                <div class="flex items-center justify-between border-b pb-2.5">
-                    <h3 class="font-bold text-slate-800 text-sm">مدیریت برچسب</h3>
-                    <button id="close-manage-modal-btn" class="text-slate-400 hover:text-slate-600 p-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
+                    <!-- نمودار ۱: گراف مقایسه‌ای برنامه‌ها و اجرا شده‌ها به تفکیک برچسب -->
+                    <div class="bg-slate-50 border border-slate-200 p-3 rounded-2xl space-y-2">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs font-bold text-slate-700">تعداد برنامه‌ریزی در مقابل اجرا شده‌ها (بر اساس برچسب)</h4>
+                            <span class="text-[10px] text-slate-400">میله‌ای</span>
+                        </div>
+                        <div class="h-56 relative w-full">
+                            <canvas id="tasksComparisonChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- نمودار ۲: سهم هر پروژه از کل کارها (Pie / Donut) -->
+                    <div class="bg-slate-50 border border-slate-200 p-3 rounded-2xl space-y-2">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs font-bold text-slate-700">سهم و توزیع کارها در پروژه‌ها</h4>
+                            <span class="text-[10px] text-slate-400">دایره‌ای</span>
+                        </div>
+                        <div class="h-48 relative w-full flex items-center justify-center">
+                            <canvas id="tasksDistributionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- پیام حالت خالی بودن داده‌ها برای گزارش -->
+                    <div id="reports-empty-msg" class="hidden text-center py-6 text-xs text-slate-400">
+                        هنوز اطلاعات کافی برای ترسیم نمودارها وجود ندارد. چند کار و برچسب اضافه کنید!
+                    </div>
                 </div>
-                <form id="rename-project-form" class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">تغییر نام برچسب</label>
-                        <input 
-                            type="text" 
-                            id="edit-project-name-input" 
-                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            required
-                        >
-                    </div>
-                    <label class="flex items-center gap-2 cursor-pointer bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                        <input type="checkbox" id="edit-project-requires-time-input" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                        <span class="text-xs text-slate-700 font-medium">نیاز به تخمین زمان و تاریخ</span>
-                    </label>
-                    <div class="flex gap-2 pt-1">
-                        <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold py-2 rounded-xl transition text-xs shadow-md">
-                            ذخیره تغییرات
-                        </button>
-                        <button type="button" id="delete-project-btn" class="px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold py-2 rounded-xl transition text-xs flex items-center justify-center gap-1 active:scale-95">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            <span>حذف</span>
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
 
@@ -513,6 +532,23 @@
         const actualTimeForm = document.getElementById('actual-time-form');
         const actualTimeTaskTitle = document.getElementById('actual-time-task-title');
         const actualMinutesInput = document.getElementById('actual-minutes-input');
+
+        // المان‌های مودال گزارش
+        const openReportsBtn = document.getElementById('open-reports-btn');
+        const reportsModal = document.getElementById('reports-modal');
+        const closeReportsBtn = document.getElementById('close-reports-btn');
+        const kpiTotalTasks = document.getElementById('kpi-total-tasks');
+        const kpiCompletedTasks = document.getElementById('kpi-completed-tasks');
+        const kpiCompletionRate = document.getElementById('kpi-completion-rate');
+        const kpiArchivedTasks = document.getElementById('kpi-archived-tasks');
+        const timeKpiContainer = document.getElementById('time-kpi-container');
+        const kpiEstTime = document.getElementById('kpi-est-time');
+        const kpiActualTime = document.getElementById('kpi-actual-time');
+        const timeAccuracyBadge = document.getElementById('time-accuracy-badge');
+        const reportsEmptyMsg = document.getElementById('reports-empty-msg');
+
+        let tasksComparisonChartInstance = null;
+        let tasksDistributionChartInstance = null;
 
         function showNotification(text) {
             toastMsg.textContent = text;
@@ -1169,6 +1205,199 @@
                 syncToCloud();
                 showNotification('درخواست همگام‌سازی به سرور ارسال شد');
             }
+        };
+
+        // توابع و شنوندگان بخش گزارش و نمودارها
+        function renderReportsDashboard() {
+            const total = todos.length;
+            const completed = todos.filter(t => t.done).length;
+            const archived = todos.filter(t => t.archived).length;
+            const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            kpiTotalTasks.textContent = total;
+            kpiCompletedTasks.textContent = completed;
+            kpiCompletionRate.textContent = `${rate}%`;
+            kpiArchivedTasks.textContent = archived;
+
+            // محاسبه و نمایش زمان‌های تخمینی و واقعی
+            let totalEst = 0;
+            let totalActual = 0;
+            let hasTimedData = false;
+
+            todos.forEach(t => {
+                if (t.estimatedMinutes) {
+                    totalEst += Number(t.estimatedMinutes);
+                    hasTimedData = true;
+                }
+                if (t.actualMinutes) {
+                    totalActual += Number(t.actualMinutes);
+                    hasTimedData = true;
+                }
+            });
+
+            if (hasTimedData) {
+                timeKpiContainer.classList.remove('hidden');
+                kpiEstTime.textContent = `${totalEst} دقیقه (${(totalEst / 60).toFixed(1)} ساعت)`;
+                kpiActualTime.textContent = `${totalActual} دقیقه (${(totalActual / 60).toFixed(1)} ساعت)`;
+
+                if (totalActual === 0) {
+                    timeAccuracyBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-700 text-white";
+                    timeAccuracyBadge.textContent = "در حال اجرا";
+                } else if (totalActual <= totalEst) {
+                    timeAccuracyBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white";
+                    timeAccuracyBadge.textContent = "صرفه‌جویی در زمان ✓";
+                } else {
+                    timeAccuracyBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white";
+                    timeAccuracyBadge.textContent = "بیش از حد تخمین ⚠️";
+                }
+            } else {
+                timeKpiContainer.classList.add('hidden');
+            }
+
+            if (total === 0) {
+                reportsEmptyMsg.classList.remove('hidden');
+                if (tasksComparisonChartInstance) tasksComparisonChartInstance.destroy();
+                if (tasksDistributionChartInstance) tasksDistributionChartInstance.destroy();
+                return;
+            } else {
+                reportsEmptyMsg.classList.add('hidden');
+            }
+
+            // آماده‌سازی داده‌ها بر اساس هر برچسب/پروژه
+            const tagStats = {};
+            const UNTAGGED = 'بدون برچسب';
+
+            tagStats[UNTAGGED] = { total: 0, completed: 0 };
+            projects.forEach(p => {
+                tagStats[p.name] = { total: 0, completed: 0 };
+            });
+
+            todos.forEach(t => {
+                if (!Array.isArray(t.projects) || t.projects.length === 0) {
+                    tagStats[UNTAGGED].total++;
+                    if (t.done) tagStats[UNTAGGED].completed++;
+                } else {
+                    t.projects.forEach(pName => {
+                        if (!tagStats[pName]) {
+                            tagStats[pName] = { total: 0, completed: 0 };
+                        }
+                        tagStats[pName].total++;
+                        if (t.done) tagStats[pName].completed++;
+                    });
+                }
+            });
+
+            // حذف برچسب‌های خالی برای زیبایی نمودارها
+            const filteredLabels = Object.keys(tagStats).filter(label => tagStats[label].total > 0);
+            const totalTasksData = filteredLabels.map(l => tagStats[l].total);
+            const completedTasksData = filteredLabels.map(l => tagStats[l].completed);
+
+            // ۱. ساخت نمودار مقایسه‌ای میله‌ای (کل برنامه‌ها در مقابل اجرا شده‌ها)
+            const ctxBar = document.getElementById('tasksComparisonChart').getContext('2d');
+            if (tasksComparisonChartInstance) {
+                tasksComparisonChartInstance.destroy();
+            }
+
+            tasksComparisonChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: filteredLabels,
+                    datasets: [
+                        {
+                            label: 'کل برنامه‌ها (هدف)',
+                            data: totalTasksData,
+                            backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                            borderColor: 'rgb(79, 70, 229)',
+                            borderWidth: 1.5,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'اجرا شده‌ها (تکمیل)',
+                            data: completedTasksData,
+                            backgroundColor: 'rgba(16, 185, 129, 0.85)',
+                            borderColor: 'rgb(5, 150, 105)',
+                            borderWidth: 1.5,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { family: 'Vazirmatn', size: 11 },
+                                boxWidth: 12
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                font: { family: 'Vazirmatn', size: 10 }
+                            },
+                            grid: { color: 'rgba(226, 232, 240, 0.6)' }
+                        },
+                        x: {
+                            ticks: {
+                                font: { family: 'Vazirmatn', size: 10 }
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // ۲. ساخت نمودار دایره‌ای سهم هر برچسب/پروژه (Doughnut Chart)
+            const ctxDonut = document.getElementById('tasksDistributionChart').getContext('2d');
+            if (tasksDistributionChartInstance) {
+                tasksDistributionChartInstance.destroy();
+            }
+
+            const chartColors = [
+                '#6366f1', '#10b981', '#f59e0b', '#ec4899', 
+                '#8b5cf6', '#06b6d4', '#14b8a6', '#f97316'
+            ];
+
+            tasksDistributionChartInstance = new Chart(ctxDonut, {
+                type: 'doughnut',
+                data: {
+                    labels: filteredLabels,
+                    datasets: [{
+                        data: totalTasksData,
+                        backgroundColor: chartColors.slice(0, filteredLabels.length),
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { family: 'Vazirmatn', size: 10 },
+                                boxWidth: 10
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        openReportsBtn.onclick = () => {
+            reportsModal.classList.remove('hidden');
+            setTimeout(renderReportsDashboard, 50);
+        };
+
+        closeReportsBtn.onclick = () => {
+            reportsModal.classList.add('hidden');
         };
 
         authActionBtn.onclick = () => userModal.classList.remove('hidden');
