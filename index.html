@@ -197,6 +197,38 @@
             </div>
         </div>
 
+        <!-- مودال مدیریت/ویرایش پروژه (Rename و Delete) -->
+        <div id="manage-project-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-3xl p-5 w-full max-w-xs shadow-2xl space-y-3.5">
+                <div class="flex items-center justify-between border-b pb-2.5">
+                    <h3 class="font-bold text-slate-800 text-sm">مدیریت پروژه</h3>
+                    <button id="close-manage-modal-btn" class="text-slate-400 hover:text-slate-600 p-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <form id="rename-project-form" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">تغییر نام پروژه</label>
+                        <input 
+                            type="text" 
+                            id="edit-project-name-input" 
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            required
+                        >
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-xl transition text-xs shadow-md">
+                            ذخیره نام جدید
+                        </button>
+                        <button type="button" id="delete-project-btn" class="px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-medium py-2 rounded-xl transition text-xs flex items-center justify-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            <span>حذف</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- مودال اتصال و ورود (پشتیبانی همزمان از گوگل و شناسه ابری مطمئن) -->
         <div id="user-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-4">
@@ -293,12 +325,13 @@
         const PROJECTS_STORAGE_KEY = 'MY_SYNC_PROJECTS_DATA';
         const DEFAULT_GLOBAL_ID = 'main-shared-room';
 
-        const DEFAULT_PROJECTS = ['همه پروژه‌ها', 'عمومی', 'خرید خانه', 'فرزندان', 'پروژه الف'];
+        const ALL_PROJECTS_TAB = 'همه کارها';
 
         let todos = [];
-        let projects = [];
+        let projects = []; // هیچ پروژه پیش‌فرضی وجود ندارد
         let currentFilter = 'all';
-        let currentProject = 'همه پروژه‌ها';
+        let currentProject = ALL_PROJECTS_TAB;
+        let selectedProjectForManage = null;
         let db = null;
         let auth = null;
         let activeSyncId = localStorage.getItem(ACTIVE_SYNC_ID_KEY) || DEFAULT_GLOBAL_ID;
@@ -340,6 +373,13 @@
         const closeProjectModalBtn = document.getElementById('close-project-modal-btn');
         const newProjectForm = document.getElementById('new-project-form');
         const projectNameInput = document.getElementById('project-name-input');
+        
+        // المان‌های مدیریت پروژه
+        const manageProjectModal = document.getElementById('manage-project-modal');
+        const closeManageModalBtn = document.getElementById('close-manage-modal-btn');
+        const renameProjectForm = document.getElementById('rename-project-form');
+        const editProjectNameInput = document.getElementById('edit-project-name-input');
+        const deleteProjectBtn = document.getElementById('delete-project-btn');
 
         function showNotification(text) {
             toastMsg.textContent = text;
@@ -357,10 +397,10 @@
                 try {
                     projects = JSON.parse(rawProjects);
                 } catch (e) {
-                    projects = [...DEFAULT_PROJECTS];
+                    projects = [];
                 }
             } else {
-                projects = [...DEFAULT_PROJECTS];
+                projects = []; // بدون هیچ پروژه اولیه
             }
 
             const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -371,9 +411,7 @@
                     todos = [];
                 }
             } else {
-                todos = [
-                    { id: '1', title: 'به برنامه مدیریت کارها خوش آمدید', done: false, date: 'امروز', project: 'عمومی' }
-                ];
+                todos = [];
             }
             renderProjectsBar();
             renderUI();
@@ -391,7 +429,6 @@
         async function syncToCloud() {
             if (!db || !activeSyncId) return;
             try {
-                // استفاده از UID در صورت لاگین گوگل و جلوگیری از تداخل نام سند
                 const docId = activeSyncType === 'google' 
                     ? (auth.currentUser ? auth.currentUser.uid : activeSyncId) 
                     : encodeURIComponent(activeSyncId).replace(/\./g, '_');
@@ -453,7 +490,6 @@
 
             if (cloudUnsubscribe) cloudUnsubscribe();
             
-            // در حالت گوگل از UID برای باز کردن سند استفاده می‌شود
             const docId = type === 'google' 
                 ? (auth.currentUser ? auth.currentUser.uid : syncId)
                 : encodeURIComponent(syncId).replace(/\./g, '_');
@@ -481,7 +517,6 @@
                     renderUI();
                     isSyncingFromCloud = false;
                 } else {
-                    // برای اولین بار ثبت اطلاعات محلی روی این شناسه
                     syncToCloud();
                 }
             }, (error) => {
@@ -500,42 +535,154 @@
             projectsBar.innerHTML = '';
             taskProjectSelect.innerHTML = '';
 
+            // تب همیشه موجود "همه کارها"
+            const allBtn = document.createElement('button');
+            const isAllSelected = currentProject === ALL_PROJECTS_TAB;
+            allBtn.className = `px-3 py-1 rounded-xl text-xs whitespace-nowrap transition flex items-center gap-1.5 font-medium ${
+                isAllSelected 
+                    ? 'bg-indigo-600 text-white shadow-sm' 
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`;
+            const uncompletedCount = todos.filter(t => !t.done).length;
+            allBtn.innerHTML = `<span>${ALL_PROJECTS_TAB}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isAllSelected ? 'bg-indigo-800/60 text-white' : 'bg-slate-100 text-slate-500'}">${uncompletedCount}</span>`;
+            allBtn.onclick = () => {
+                currentProject = ALL_PROJECTS_TAB;
+                renderProjectsBar();
+                renderUI();
+            };
+            projectsBar.appendChild(allBtn);
+
+            // گزینه عمومی/بدون پروژه در منوی افزودن کار
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = 'بدون دسته‌بندی';
+            taskProjectSelect.appendChild(defaultOpt);
+
             projects.forEach(p => {
-                // دکمه فیلتر پروژه
-                const btn = document.createElement('button');
                 const isSelected = p === currentProject;
-                btn.className = `px-3 py-1 rounded-xl text-xs whitespace-nowrap transition flex items-center gap-1.5 font-medium ${
+                const container = document.createElement('div');
+                container.className = `inline-flex items-center rounded-xl border text-xs whitespace-nowrap transition overflow-hidden ${
                     isSelected 
-                        ? 'bg-indigo-600 text-white shadow-sm' 
-                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                        ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' 
+                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
                 }`;
 
-                // تعداد کارهای این پروژه
-                const count = p === 'همه پروژه‌ها' 
-                    ? todos.filter(t => !t.done).length 
-                    : todos.filter(t => (t.project || 'عمومی') === p && !t.done).length;
-
-                btn.innerHTML = `<span>${p}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-indigo-800/60 text-white' : 'bg-slate-100 text-slate-500'}">${count}</span>`;
-
-                btn.onclick = () => {
+                // دکمه انتخاب پروژه
+                const selectBtn = document.createElement('button');
+                selectBtn.className = 'px-2.5 py-1 flex items-center gap-1.5 font-medium';
+                const count = todos.filter(t => t.project === p && !t.done).length;
+                selectBtn.innerHTML = `<span>${p}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-indigo-800/60 text-white' : 'bg-slate-100 text-slate-500'}">${count}</span>`;
+                selectBtn.onclick = () => {
                     currentProject = p;
                     renderProjectsBar();
                     renderUI();
                 };
-                projectsBar.appendChild(btn);
 
-                // گزینه‌های منوی انتخاب پروژه در زمان ساخت کار جدید (به جز گزینه "همه")
-                if (p !== 'همه پروژه‌ها') {
-                    const opt = document.createElement('option');
-                    opt.value = p;
-                    opt.textContent = p;
-                    if (currentProject !== 'همه پروژه‌ها' && currentProject === p) {
-                        opt.selected = true;
-                    }
-                    taskProjectSelect.appendChild(opt);
+                // دکمه تنظیمات (ویرایش نام و حذف)
+                const configBtn = document.createElement('button');
+                configBtn.title = `مدیریت پروژه «${p}»`;
+                configBtn.className = `p-1 border-r ${
+                    isSelected 
+                        ? 'border-indigo-500 hover:bg-indigo-700 text-indigo-100' 
+                        : 'border-slate-200 hover:bg-slate-200 text-slate-400 hover:text-slate-700'
+                } transition flex items-center justify-center`;
+                configBtn.innerHTML = `
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                    </svg>
+                `;
+                configBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    openManageProjectModal(p);
+                };
+
+                container.appendChild(selectBtn);
+                container.appendChild(configBtn);
+                projectsBar.appendChild(container);
+
+                // پر کردن منوی انتخاب در زمان ساخت تسک
+                const opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                if (currentProject !== ALL_PROJECTS_TAB && currentProject === p) {
+                    opt.selected = true;
                 }
+                taskProjectSelect.appendChild(opt);
             });
         }
+
+        // مودال مدیریت پروژه (Rename / Delete)
+        function openManageProjectModal(projectName) {
+            selectedProjectForManage = projectName;
+            editProjectNameInput.value = projectName;
+            manageProjectModal.classList.remove('hidden');
+            editProjectNameInput.focus();
+        }
+
+        closeManageModalBtn.onclick = () => {
+            manageProjectModal.classList.add('hidden');
+            selectedProjectForManage = null;
+        };
+
+        // تغییر نام پروژه
+        renameProjectForm.onsubmit = (e) => {
+            e.preventDefault();
+            const newName = editProjectNameInput.value.trim();
+            if (!newName || !selectedProjectForManage) return;
+
+            if (newName !== selectedProjectForManage && projects.includes(newName)) {
+                showNotification('این نام پروژه قبلاً ثبت شده است');
+                return;
+            }
+
+            const oldName = selectedProjectForManage;
+            projects = projects.map(p => p === oldName ? newName : p);
+            
+            // به‌روزرسانی پروژه در تسک‌های موجود
+            todos = todos.map(t => {
+                if (t.project === oldName) {
+                    return { ...t, project: newName };
+                }
+                return t;
+            });
+
+            if (currentProject === oldName) {
+                currentProject = newName;
+            }
+
+            saveLocalData();
+            renderProjectsBar();
+            renderUI();
+            manageProjectModal.classList.add('hidden');
+            showNotification(`نام پروژه به «${newName}» تغییر یافت`);
+        };
+
+        // حذف پروژه
+        deleteProjectBtn.onclick = () => {
+            if (!selectedProjectForManage) return;
+            const projectToDelete = selectedProjectForManage;
+
+            // حذف پروژه از لیست
+            projects = projects.filter(p => p !== projectToDelete);
+
+            // تسک‌های این پروژه به حالت بدون دسته‌بندی تبدیل می‌شوند
+            todos = todos.map(t => {
+                if (t.project === projectToDelete) {
+                    return { ...t, project: '' };
+                }
+                return t;
+            });
+
+            if (currentProject === projectToDelete) {
+                currentProject = ALL_PROJECTS_TAB;
+            }
+
+            saveLocalData();
+            renderProjectsBar();
+            renderUI();
+            manageProjectModal.classList.add('hidden');
+            showNotification(`پروژه «${projectToDelete}» حذف شد`);
+        };
 
         // مودال ایجاد پروژه
         addProjectBtn.onclick = () => {
@@ -553,7 +700,7 @@
             const pName = projectNameInput.value.trim();
             if (!pName) return;
 
-            if (projects.includes(pName)) {
+            if (projects.includes(pName) || pName === ALL_PROJECTS_TAB) {
                 showNotification('این پروژه قبلاً ساخته شده است');
                 return;
             }
@@ -575,12 +722,10 @@
 
             onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    // استفاده از UID یکتا برای اتصال به فایراستور
                     startRealtimeSync(user.uid, user.displayName || user.email, 'google', user.photoURL);
                 } else if (activeSyncId && activeSyncType === 'custom') {
                     startRealtimeSync(activeSyncId, activeSyncId, 'custom');
                 } else {
-                    // کاربر خارج شده و شناسه ندارد؛ اطلاعات را ریست نگه می‌داریم
                     syncStatusDot.className = "w-2.5 h-2.5 rounded-full bg-slate-400";
                     syncStatusText.textContent = "آفلاین (قطع اتصال)";
                 }
@@ -631,9 +776,8 @@
             localStorage.removeItem(LOCAL_STORAGE_KEY);
             localStorage.removeItem(PROJECTS_STORAGE_KEY);
 
-            // پاک‌سازی لیست کارهای کاربر قبلی از رابط کاربری و حافظه
             todos = [];
-            projects = [...DEFAULT_PROJECTS];
+            projects = [];
             renderUI();
             renderProjectsBar();
 
@@ -646,7 +790,6 @@
             userModal.classList.add('hidden');
             showNotification('خروج انجام شد و تسک‌ها پاک شدند');
 
-            // ریلود خودکار صفحه پس از خروج برای پاک‌سازی قطعی وضعیت برنامه
             setTimeout(() => {
                 window.location.reload();
             }, 300);
@@ -668,14 +811,13 @@
         function renderUI() {
             todoList.innerHTML = '';
             const filtered = todos.filter(t => {
-                // فیلتر وضعیت
+                // فیلتر وضعیت (همه، فعال، انجام‌شده)
                 if (currentFilter === 'active' && t.done) return false;
                 if (currentFilter === 'completed' && !t.done) return false;
 
-                // فیلتر دسته‌بندی / پروژه
-                if (currentProject !== 'همه پروژه‌ها') {
-                    const taskProj = t.project || 'عمومی';
-                    if (taskProj !== currentProject) return false;
+                // فیلتر پروژه
+                if (currentProject !== ALL_PROJECTS_TAB) {
+                    if (t.project !== currentProject) return false;
                 }
 
                 return true;
@@ -721,13 +863,14 @@
                 time.className = 'text-[11px] text-slate-400';
                 time.textContent = item.date;
 
-                const projectTag = document.createElement('span');
-                projectTag.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100/80';
-                projectTag.textContent = item.project || 'عمومی';
+                if (item.project) {
+                    const projectTag = document.createElement('span');
+                    projectTag.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100/80';
+                    projectTag.textContent = item.project;
+                    meta.appendChild(projectTag);
+                }
 
-                meta.appendChild(projectTag);
                 meta.appendChild(time);
-
                 info.appendChild(text);
                 info.appendChild(meta);
                 left.appendChild(check);
@@ -756,7 +899,7 @@
             const val = taskInput.value.trim();
             if (!val) return;
 
-            const selectedProject = taskProjectSelect.value || (currentProject !== 'همه پروژه‌ها' ? currentProject : 'عمومی');
+            const selectedProject = taskProjectSelect.value || (currentProject !== ALL_PROJECTS_TAB ? currentProject : '');
             const now = new Date();
             const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
@@ -772,7 +915,7 @@
             saveLocalData();
             renderProjectsBar();
             renderUI();
-            showNotification(`کار به پروژه «${selectedProject}» اضافه شد`);
+            showNotification(selectedProject ? `کار به پروژه «${selectedProject}» اضافه شد` : 'کار با موفقیت افزوده شد');
         });
 
         filterButtons.forEach(btn => {
@@ -803,7 +946,7 @@
 
         loadLocalData();
 
-        // تزریق خودکار Web App Manifest به‌صورت Data URI بدون نیاز به فایل مجزا
+        // تزریق خودکار Web App Manifest
         const manifestData = {
             "name": "مدیریت کارهای من",
             "short_name": "کارهای من",
@@ -830,7 +973,7 @@
         const manifestURL = URL.createObjectURL(manifestBlob);
         document.getElementById('manifest-placeholder').setAttribute('href', manifestURL);
 
-        // مدیریت دکمه نصب PWA
+        // دکمه نصب PWA
         let deferredPrompt;
         const installBtn = document.getElementById('pwa-install-btn');
 
