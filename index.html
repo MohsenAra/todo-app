@@ -467,19 +467,27 @@
             if (activeSyncType === 'google' && auth) {
                 try { await signOut(auth); } catch (e) {}
             }
-            if (cloudUnsubscribe) cloudUnsubscribe();
+            if (cloudUnsubscribe) {
+                cloudUnsubscribe();
+                cloudUnsubscribe = null;
+            }
             activeSyncId = null;
             localStorage.removeItem(ACTIVE_SYNC_ID_KEY);
             localStorage.removeItem('MY_ACTIVE_SYNC_TYPE');
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+
+            // پاک‌سازی لیست کارهای کاربر قبلی از رابط کاربری و حافظه
+            todos = [];
+            renderUI();
 
             authBtnLabel.textContent = "اتصال به ابر";
             loggedInSection.classList.add('hidden');
             loginOptionsSection.classList.remove('hidden');
             loginBanner.classList.remove('hidden');
-            syncStatusDot.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
-            syncStatusText.textContent = "آفلاین (جهت سینک متصل شوید)";
+            syncStatusDot.className = "w-2.5 h-2.5 rounded-full bg-slate-400";
+            syncStatusText.textContent = "آفلاین (قطع اتصال)";
             userModal.classList.add('hidden');
-            showNotification('اتصال ابری قطع شد');
+            showNotification('خروج انجام شد و تسک‌ها پاک شدند');
         }
 
         forceSyncBtn.onclick = () => {
