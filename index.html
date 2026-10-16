@@ -317,21 +317,26 @@
         async function syncToCloud() {
             if (!db || !activeSyncId) return;
             try {
-                const safeDocId = encodeURIComponent(activeSyncId).replace(/\./g, '_');
-                const userDocRef = doc(db, 'users', safeDocId);
+                // استفاده از UID در صورت لاگین گوگل و جلوگیری از تداخل نام سند
+                const docId = activeSyncType === 'google' 
+                    ? (auth.currentUser ? auth.currentUser.uid : activeSyncId) 
+                    : encodeURIComponent(activeSyncId).replace(/\./g, '_');
+
+                const userDocRef = doc(db, 'users', docId);
                 await setDoc(userDocRef, {
                     items: todos,
                     syncId: activeSyncId,
+                    userId: auth.currentUser ? auth.currentUser.uid : null,
                     lastUpdated: Date.now()
                 });
                 syncStatusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                syncStatusText.textContent = `همگام با سرور (${activeSyncId})`;
+                syncStatusText.textContent = `همگام با سرور (${activeSyncType === 'google' ? 'گوگل' : activeSyncId})`;
             } catch (err) {
                 console.error("خطا در ارسال به ابر:", err);
                 syncStatusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
                 if (err.code === 'permission-denied') {
                     syncStatusText.textContent = "خطای Rules: دسترسی دیتابیس قفل است";
-                    showNotification("دسترسی دیتابیس بسته است! لطفاً Rules را Publish کنید");
+                    showNotification("دسترسی دیتابیس بسته است! لطفاً Rules را بررسی کنید");
                 } else {
                     syncStatusText.textContent = "خطا در برقراری ارتباط با سرور";
                 }
@@ -353,7 +358,7 @@
             loginOptionsSection.classList.add('hidden');
 
             modalUserName.textContent = displayName || syncId;
-            modalUserEmail.textContent = syncId;
+            modalUserEmail.textContent = auth.currentUser?.email || syncId;
             if (photoUrl) {
                 modalUserAvatar.innerHTML = `<img src="${photoUrl}" class="w-full h-full object-cover">`;
             } else {
@@ -365,8 +370,12 @@
 
             if (cloudUnsubscribe) cloudUnsubscribe();
             
-            const safeDocId = encodeURIComponent(syncId).replace(/\./g, '_');
-            const docRef = doc(db, 'users', safeDocId);
+            // در حالت گوگل از UID برای باز کردن سند استفاده می‌شود
+            const docId = type === 'google' 
+                ? (auth.currentUser ? auth.currentUser.uid : syncId)
+                : encodeURIComponent(syncId).replace(/\./g, '_');
+
+            const docRef = doc(db, 'users', docId);
 
             cloudUnsubscribe = onSnapshot(docRef, (docSnap) => {
                 syncStatusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
@@ -405,7 +414,8 @@
 
             onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    startRealtimeSync(user.email || user.uid, user.displayName || user.email, 'google', user.photoURL);
+                    // استفاده از UID یکتا برای اتصال به فایراستور
+                    startRealtimeSync(user.uid, user.displayName || user.email, 'google', user.photoURL);
                 } else if (activeSyncId && activeSyncType === 'custom') {
                     startRealtimeSync(activeSyncId, activeSyncId, 'custom');
                 } else {
