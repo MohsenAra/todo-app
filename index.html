@@ -94,6 +94,21 @@
             </div>
         </header>
 
+        <!-- نوار افقی دسته‌بندی و پروژه‌ها -->
+        <section class="bg-slate-50 border-b border-slate-200/80 px-4 py-2.5">
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" id="projects-bar">
+                    <!-- دکمه‌های پروژه‌ها به صورت پویا ساخته می‌شوند -->
+                </div>
+                <button id="add-project-btn" title="افزودن پروژه جدید" class="shrink-0 p-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl transition flex items-center gap-1 text-[11px] font-bold">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span>پروژه نو</span>
+                </button>
+            </div>
+        </section>
+
         <!-- لیست کارها -->
         <section class="flex-1 p-4 overflow-y-auto no-scrollbar space-y-2.5">
             <!-- بنر وضعیت اتصال ابری -->
@@ -127,7 +142,14 @@
         </section>
 
         <!-- فرم افزودن کار جدید -->
-        <footer class="p-3 bg-slate-50 border-t border-slate-200">
+        <footer class="p-3 bg-slate-50 border-t border-slate-200 space-y-2">
+            <!-- نوار انتخاب سریع پروژه برای کار جدید -->
+            <div class="flex items-center gap-2 text-xs text-slate-500 px-1">
+                <span class="text-[11px] font-medium text-slate-400">پروژه:</span>
+                <select id="task-project-select" class="bg-white border border-slate-300 rounded-xl px-2.5 py-1 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <!-- گزینه‌ها به صورت پویا پر می‌شوند -->
+                </select>
+            </div>
             <form id="add-form" class="flex items-center gap-2">
                 <input 
                     type="text" 
@@ -147,6 +169,33 @@
                 </button>
             </form>
         </footer>
+
+        <!-- مودال افزودن پروژه جدید -->
+        <div id="new-project-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-3xl p-5 w-full max-w-xs shadow-2xl space-y-3.5">
+                <div class="flex items-center justify-between border-b pb-2.5">
+                    <h3 class="font-bold text-slate-800 text-sm">افزودن دسته‌بندی یا پروژه</h3>
+                    <button id="close-project-modal-btn" class="text-slate-400 hover:text-slate-600 p-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <form id="new-project-form" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">نام پروژه (مثلاً: خرید خانه، فرزندان)</label>
+                        <input 
+                            type="text" 
+                            id="project-name-input" 
+                            placeholder="نام پروژه را بنویسید..." 
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            required
+                        >
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-xl transition text-xs shadow-md">
+                        ثبت پروژه
+                    </button>
+                </form>
+            </div>
+        </div>
 
         <!-- مودال اتصال و ورود (پشتیبانی همزمان از گوگل و شناسه ابری مطمئن) -->
         <div id="user-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -241,10 +290,15 @@
 
         const LOCAL_STORAGE_KEY = 'MY_SYNC_TODO_DATA';
         const ACTIVE_SYNC_ID_KEY = 'MY_ACTIVE_SYNC_ID';
+        const PROJECTS_STORAGE_KEY = 'MY_SYNC_PROJECTS_DATA';
         const DEFAULT_GLOBAL_ID = 'main-shared-room';
 
+        const DEFAULT_PROJECTS = ['همه پروژه‌ها', 'عمومی', 'خرید خانه', 'فرزندان', 'پروژه الف'];
+
         let todos = [];
+        let projects = [];
         let currentFilter = 'all';
+        let currentProject = 'همه پروژه‌ها';
         let db = null;
         let auth = null;
         let activeSyncId = localStorage.getItem(ACTIVE_SYNC_ID_KEY) || DEFAULT_GLOBAL_ID;
@@ -279,6 +333,13 @@
         const modalUserEmail = document.getElementById('modal-user-email');
         const modalUserAvatar = document.getElementById('modal-user-avatar');
         const exportBtn = document.getElementById('export-btn');
+        const projectsBar = document.getElementById('projects-bar');
+        const taskProjectSelect = document.getElementById('task-project-select');
+        const addProjectBtn = document.getElementById('add-project-btn');
+        const newProjectModal = document.getElementById('new-project-modal');
+        const closeProjectModalBtn = document.getElementById('close-project-modal-btn');
+        const newProjectForm = document.getElementById('new-project-form');
+        const projectNameInput = document.getElementById('project-name-input');
 
         function showNotification(text) {
             toastMsg.textContent = text;
@@ -291,6 +352,17 @@
         }
 
         function loadLocalData() {
+            const rawProjects = localStorage.getItem(PROJECTS_STORAGE_KEY);
+            if (rawProjects) {
+                try {
+                    projects = JSON.parse(rawProjects);
+                } catch (e) {
+                    projects = [...DEFAULT_PROJECTS];
+                }
+            } else {
+                projects = [...DEFAULT_PROJECTS];
+            }
+
             const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
             if (raw) {
                 try {
@@ -300,14 +372,16 @@
                 }
             } else {
                 todos = [
-                    { id: '1', title: 'به برنامه مدیریت کارها خوش آمدید', done: false, date: 'امروز' }
+                    { id: '1', title: 'به برنامه مدیریت کارها خوش آمدید', done: false, date: 'امروز', project: 'عمومی' }
                 ];
             }
+            renderProjectsBar();
             renderUI();
         }
 
         function saveLocalData() {
             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
+            localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
             if (!isSyncingFromCloud && activeSyncId) {
                 syncToCloud();
             }
@@ -330,6 +404,7 @@
                 const userDocRef = doc(db, 'users', docId);
                 await setDoc(userDocRef, {
                     items: todos,
+                    projects: projects,
                     syncId: activeSyncId,
                     userId: currentUser ? currentUser.uid : null,
                     userName: displayName,
@@ -391,13 +466,20 @@
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+                    isSyncingFromCloud = true;
+
                     if (data && Array.isArray(data.items)) {
-                        isSyncingFromCloud = true;
                         todos = data.items;
                         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
-                        renderUI();
-                        isSyncingFromCloud = false;
                     }
+                    if (data && Array.isArray(data.projects)) {
+                        projects = data.projects;
+                        localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+                    }
+
+                    renderProjectsBar();
+                    renderUI();
+                    isSyncingFromCloud = false;
                 } else {
                     // برای اولین بار ثبت اطلاعات محلی روی این شناسه
                     syncToCloud();
@@ -413,6 +495,77 @@
                 }
             });
         }
+
+        function renderProjectsBar() {
+            projectsBar.innerHTML = '';
+            taskProjectSelect.innerHTML = '';
+
+            projects.forEach(p => {
+                // دکمه فیلتر پروژه
+                const btn = document.createElement('button');
+                const isSelected = p === currentProject;
+                btn.className = `px-3 py-1 rounded-xl text-xs whitespace-nowrap transition flex items-center gap-1.5 font-medium ${
+                    isSelected 
+                        ? 'bg-indigo-600 text-white shadow-sm' 
+                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`;
+
+                // تعداد کارهای این پروژه
+                const count = p === 'همه پروژه‌ها' 
+                    ? todos.filter(t => !t.done).length 
+                    : todos.filter(t => (t.project || 'عمومی') === p && !t.done).length;
+
+                btn.innerHTML = `<span>${p}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-indigo-800/60 text-white' : 'bg-slate-100 text-slate-500'}">${count}</span>`;
+
+                btn.onclick = () => {
+                    currentProject = p;
+                    renderProjectsBar();
+                    renderUI();
+                };
+                projectsBar.appendChild(btn);
+
+                // گزینه‌های منوی انتخاب پروژه در زمان ساخت کار جدید (به جز گزینه "همه")
+                if (p !== 'همه پروژه‌ها') {
+                    const opt = document.createElement('option');
+                    opt.value = p;
+                    opt.textContent = p;
+                    if (currentProject !== 'همه پروژه‌ها' && currentProject === p) {
+                        opt.selected = true;
+                    }
+                    taskProjectSelect.appendChild(opt);
+                }
+            });
+        }
+
+        // مودال ایجاد پروژه
+        addProjectBtn.onclick = () => {
+            projectNameInput.value = '';
+            newProjectModal.classList.remove('hidden');
+            projectNameInput.focus();
+        };
+
+        closeProjectModalBtn.onclick = () => {
+            newProjectModal.classList.add('hidden');
+        };
+
+        newProjectForm.onsubmit = (e) => {
+            e.preventDefault();
+            const pName = projectNameInput.value.trim();
+            if (!pName) return;
+
+            if (projects.includes(pName)) {
+                showNotification('این پروژه قبلاً ساخته شده است');
+                return;
+            }
+
+            projects.push(pName);
+            currentProject = pName;
+            saveLocalData();
+            renderProjectsBar();
+            renderUI();
+            newProjectModal.classList.add('hidden');
+            showNotification(`پروژه «${pName}» با موفقیت افزوده شد`);
+        };
 
         // مقداردهی اولیه Firebase
         try {
@@ -476,10 +629,13 @@
             localStorage.removeItem(ACTIVE_SYNC_ID_KEY);
             localStorage.removeItem('MY_ACTIVE_SYNC_TYPE');
             localStorage.removeItem(LOCAL_STORAGE_KEY);
+            localStorage.removeItem(PROJECTS_STORAGE_KEY);
 
             // پاک‌سازی لیست کارهای کاربر قبلی از رابط کاربری و حافظه
             todos = [];
+            projects = [...DEFAULT_PROJECTS];
             renderUI();
+            renderProjectsBar();
 
             authBtnLabel.textContent = "اتصال به ابر";
             loggedInSection.classList.add('hidden');
@@ -512,8 +668,16 @@
         function renderUI() {
             todoList.innerHTML = '';
             const filtered = todos.filter(t => {
-                if (currentFilter === 'active') return !t.done;
-                if (currentFilter === 'completed') return t.done;
+                // فیلتر وضعیت
+                if (currentFilter === 'active' && t.done) return false;
+                if (currentFilter === 'completed' && !t.done) return false;
+
+                // فیلتر دسته‌بندی / پروژه
+                if (currentProject !== 'همه پروژه‌ها') {
+                    const taskProj = t.project || 'عمومی';
+                    if (taskProj !== currentProject) return false;
+                }
+
                 return true;
             });
 
@@ -532,6 +696,7 @@
                 left.onclick = () => {
                     item.done = !item.done;
                     saveLocalData();
+                    renderProjectsBar();
                     renderUI();
                 };
 
@@ -544,17 +709,27 @@
                 }
 
                 const info = document.createElement('div');
-                info.className = 'truncate';
+                info.className = 'truncate flex-1';
                 const text = document.createElement('p');
                 text.className = `text-sm font-medium leading-relaxed truncate ${item.done ? 'task-done text-slate-400' : 'text-slate-800'}`;
                 text.textContent = item.title;
 
+                const meta = document.createElement('div');
+                meta.className = 'flex items-center gap-2 mt-0.5';
+
                 const time = document.createElement('span');
-                time.className = 'text-[11px] text-slate-400 block';
+                time.className = 'text-[11px] text-slate-400';
                 time.textContent = item.date;
 
+                const projectTag = document.createElement('span');
+                projectTag.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100/80';
+                projectTag.textContent = item.project || 'عمومی';
+
+                meta.appendChild(projectTag);
+                meta.appendChild(time);
+
                 info.appendChild(text);
-                info.appendChild(time);
+                info.appendChild(meta);
                 left.appendChild(check);
                 left.appendChild(info);
 
@@ -565,6 +740,7 @@
                     e.stopPropagation();
                     todos = todos.filter(t => t.id !== item.id);
                     saveLocalData();
+                    renderProjectsBar();
                     renderUI();
                     showNotification('کار حذف شد');
                 };
@@ -580,6 +756,7 @@
             const val = taskInput.value.trim();
             if (!val) return;
 
+            const selectedProject = taskProjectSelect.value || (currentProject !== 'همه پروژه‌ها' ? currentProject : 'عمومی');
             const now = new Date();
             const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
@@ -587,13 +764,15 @@
                 id: Date.now().toString(),
                 title: val,
                 done: false,
-                date: `امروز ${timeStr}`
+                date: `امروز ${timeStr}`,
+                project: selectedProject
             });
 
             taskInput.value = '';
             saveLocalData();
+            renderProjectsBar();
             renderUI();
-            showNotification('کار اضافه شد');
+            showNotification(`کار به پروژه «${selectedProject}» اضافه شد`);
         });
 
         filterButtons.forEach(btn => {
@@ -610,10 +789,15 @@
         });
 
         exportBtn.onclick = () => {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(todos, null, 2));
+            const backupData = {
+                projects: projects,
+                todos: todos,
+                exportedAt: new Date().toISOString()
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
             const dl = document.createElement('a');
             dl.setAttribute("href", dataStr);
-            dl.setAttribute("download", `tasks_${new Date().toISOString().slice(0, 10)}.json`);
+            dl.setAttribute("download", `tasks_backup_${new Date().toISOString().slice(0, 10)}.json`);
             dl.click();
         };
 
