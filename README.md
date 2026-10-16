@@ -1,84 +1,56 @@
-# 📱 برنامه مدیریت کارهای روزمره (Smart To-Do & Focus PWA)
+# 📱 Daily Tasks & Focus Manager / مدیریت کارهای روزمره
+
+[English](#english) | [فارسی](#fa-farsi)
+
+---
+
+<a name="english"></a>
+## 🇬🇧 English
+
+A modern, lightweight, and independent Progressive Web Application (PWA) designed for smart task management, project categorization, Pomodoro focus tracking, and real-time synchronization across mobile and desktop devices.
+
+### ✨ Key Features
+* **🌍 Bilingual UI (Multi-language):** Instant toggle between Persian (fa) and English (en) with full `LTR`/`RTL` layout adaptation.
+* **☁️ Cloud & Offline Sync:** Real-time synchronization powered by Firebase Firestore and Auth (Google login or custom Room Key), with local-first offline support.
+* **🏷️ Smart Multi-tag Taxonomy:** Assign multiple tags to tasks, quick chips for top-used tags, and dropdown for the rest.
+* **⏱️ Pomodoro Focus Timer:** 25-minute floating session timer that automatically logs spent focus time to the task (`actualMinutes`).
+* **🎙️ Voice-to-Task:** Persian and English speech recognition using the browser's Web Speech API.
+* **📊 Analytics Dashboard:** Performance metrics and comparative planned vs completed charts via Chart.js.
+* **🔔 Smart Notifications:** Web Notifications API for due dates and completed focus sessions.
+* **📦 Archive & Search:** Real-time global search, archive view with date-range filters, and lazy loading.
+
+### 🚀 How to Run
+1. **Direct Browser Execution:** Open `mobile_todo_app.html` in Chrome, Safari, or Edge.
+2. **Install as Mobile App (PWA):** Host the file on any static host (GitHub Pages, Netlify, Vercel), open it on your phone, and select **Add to Home Screen**.
+
+### 🛠️ Tech Stack
+* HTML5, CSS3, ES6+ JavaScript Modules
+* Tailwind CSS (CDN) & Vazirmatn Persian Font
+* Firebase Authentication & Cloud Firestore (v11)
+* Chart.js & Web Speech API
+
+---
+
+<a name="fa-farsi"></a>
+## 🇮🇷 فارسی
 
 یک وب‌اپلیکیشن مدرن، سبک و مستقل (PWA) برای مدیریت هوشمند کارهای روزانه، پروژه‌ها و زمان‌بندی شخصی با قابلیت همگام‌سازی لحظه‌ای بین گوشی و کامپیوتر.
 
----
+### ✨ قابلیت‌های کلیدی
+* **🌍 رابط کاربری دو زبانه (چندزبانه):** سوییچ لحظه‌ای بین فارسی و انگلیسی همراه با تغییر جهت کامل صفحه (`RTL`/`LTR`).
+* **☁️ همگام‌سازی ابری و آفلاین:** سینک لحظه‌ای با Google Firestore و ورود با اکانت گوگل یا شناسه اختصاصی.
+* **🏷️ برچسب‌گذاری چندگانه و هوشمند:** انتخاب همزمان چند تگ برای هر کار، چیپ‌های پرکاربرد و منوی سایر تگ‌ها.
+* **⏱️ تایمر تمرکز پومودورو:** نوار شناور ۲۵ دقیقه‌ای تمرکز با ثبت خودکار زمان واقعی روی کار (`actualMinutes`).
+* **🎙️ دستیار صوتی فارسی و انگلیسی:** تبدیل زنده صدا به متن کار با استفاده از Web Speech API.
+* **📊 داشبورد آماری و تحلیلی:** نمایش شاخص‌های کارایی و نمودار میله‌ای مقایسه‌ای Chart.js.
+* **🔔 اعلان‌های هوشمند سیستمی:** هشدار سررسید کارها و پایان جلسات تمرکز پومودورو.
+* **📦 آرشیو و جستجوی سراسری:** بایگانی کارهای تکمیل‌شده با فیلتر بازه تاریخ و لود تنبل.
 
-## ✨ قابلیت‌های کلیدی
-
-### ۱. ☁️ همگام‌سازی ابری و آفلاین (Cloud Sync)
-* **پشتیبانی از ورود با اکانت گوگل:** ذخیره امن اطلاعات روی Google Firestore.
-* **شناسه اتاق سفارشی:** امکان همگام‌سازی بین گوشی و سیستم کاری بدون نیاز به لاگین ایمیل (از طریق شناسه اشتراکی).
-* **کارکرد در حالت محلی (Offline-First):** در نبود اینترنت، اطلاعات در حافظه داخلی مرورگر (`localStorage`) ذخیره شده و پس از برقراری ارتباط، سینک می‌شوند.
-* **خروج ایمن (Clean Sign-out):** پاک‌سازی خودکار داده‌های محلی و جلوگیری از تداخل حساب‌ها هنگام قطع ارتباط.
-
-### ۲. 🏷️ مدیریت پروژه‌ها و برچسب‌های چندگانه (Multi-Tag Taxonomy)
-* اختصاص هم‌زمان چندین برچسب به یک کار (مثلاً `#شرکت` و `#فوری`).
-* **رابط کاربری هوشمند:** نمایش ۳ تگ پرکاربرد به‌صورت چیپ مستقیم و انتقال بقیه تگ‌ها به منوی دراپ‌داون جهت خلوت ماندن صفحه.
-* **فیلتر سریع:** با کلیک یا دبل‌کلیک روی هر برچسب در زیر تسک‌ها، لیست فوراً بر اساس آن فیلتر می‌شود.
-* پنل اختصاصی مدیریت برچسب‌ها با امکان افزودن، ویرایش و حذف بدون تداخل.
-
-### ۳. ⏱️ مدیریت زمان، تاریخ و پومودورو
-* **هوشمندی فیلدهای زمانی:** فیلدهای تخمین زمان و سررسید فقط زمانی ظاهر می‌شوند که پروژه‌ای با قابلیت «نیاز به زمان‌بندی» انتخاب شده باشد.
-* **تایمر تمرکز پومودورو (Pomodoro):** شمارش معکوس ۲۵ دقیقه‌ای برای هر تسک با نوار کنترل شناور.
-* **ثبت خودکار یا دستی زمان واقعی (`actualMinutes`):** مقایسه زمان تخمین‌زده‌شده در برابر زمان واقعی صرف‌شده.
-
-### ۴. 🎙️ دستیار صوتی فارسی (Voice-to-Task)
-* ثبت سریع کارها با گفتار به زبان فارسی (`fa-IR`) از طریق دکمه میکروفون.
-* نمایش متن زنده هنگام صحبت کردن و قابلیت استفاده روی دسکتاپ و موبایل.
-
-### ۵. 🔔 اعلان‌های هوشمند (Web Notifications)
-* ارسال هشدار سیستمی برای سررسید کارها.
-* ارسال اعلان هشدار در پایان جلسات تمرکز پومودورو.
-
-### ۶. 📦 آرشیو و جستجوی سراسری
-* امکان آرشیو کارهای تکمیل‌شده همراه با قابلیت بازیابی (Restore).
-* فیلتر پیشرفته بر اساس بازه زمانی (از تاریخ / تا تاریخ) در بخش آرشیو.
-* جستجوی زنده در عنوان تسک‌ها و هشتگ‌ها.
-* بارگذاری تنبل (Lazy Loading) برای نمایش روان تسک‌ها در تعداد بالا.
-
-### ۷. 📊 داشبورد آماری و تحلیلی
-* نمایش شاخص‌های عملکرد: تعداد کل کارها، درصد تکمیل، مجموع زمان واقعی مصرف‌شده.
-* نمودار میله‌ای مقایسه‌ای وضعیت کارها در برچسب‌های مختلف با استفاده از **Chart.js**.
+### 🚀 نحوه اجرا
+1. **اجرای مستقیم:** فایل `mobile_todo_app.html` را در مرورگر دسکتاپ یا موبایل باز کنید.
+2. **نصب به عنوان اپ موبایل (PWA):** فایل را روی هاست یا گیت‌هاب پیج قرار داده و در مرورگر گوشی گزینه **«افزودن به صفحه اصلی / Add to Home Screen»** را بزنید.
 
 ---
 
-## 🚀 نحوه اجرا و راه‌اندازی
-
-این پروژه بر اساس معماری **Single-File** طراحی شده است و نیاز به هیچ‌گونه ابزار بیلد، سرور Node.js یا پکیج مجزا ندارد.
-
-### روش ۱: اجرای مستقیم در مرورگر
-1. فایل `mobile_todo_app.html` را در کامپیوتر یا گوشی خود ذخیره کنید.
-2. روی فایل دوبار کلیک کرده یا آن را با یکی از مرورگرهای کروم (Chrome)، اج (Edge) یا سافاری (Safari) باز کنید.
-
-### روش ۲: نصب به عنوان اپلیکیشن موبایل (PWA)
-1. فایل را روی یک هاست رایگان (مثل **GitHub Pages**، **Netlify** یا **Vercel**) آپلود کنید.
-2. با مرورگر گوشی (کروم در اندروید یا سافاری در آیفون) لینک را باز کنید.
-3. از منوی مرورگر گزینه **«Add to Home Screen»** یا **«افزودن به صفحه اصلی»** را بزنید.
-4. آیکون برنامه مانند یک اپلیکیشن بومی در لیست برنامه‌های گوشی قرار خواهد گرفت.
-
----
-
-## 🛠️ تکنولوژی‌های استفاده‌شده
-
-* **زبان اصلی:** HTML5, CSS3, JavaScript (ES6+ Modules)
-* **استایل‌دهی:** Tailwind CSS (از طریق CDN)
-* **قلم فارسی:** فونت وزیرمتن (Vazirmatn)
-* **پایگاه داده و احراز هویت:** Firebase Auth & Cloud Firestore (نسخه v11)
-* **نمودارها:** Chart.js
-* **سرویس گفتار به متن:** Web Speech API
-
----
-
-## 📁 ساختار فایل‌های پروژه
-
-```text
-├── mobile_todo_app.html        # فایل اصلی و اجرایی برنامه (کامل و مستقل)
-├── CHANGELOG_AND_ROADMAP.md    # تاریخچه نسخه‌ها، تصمیمات فنی و نقشه راه
-└── README.md                   # راهنمای جامع پروژه و نحوه اجرا (فایل جاری)
-```
-
----
-
-## 📌 وضعیت جاری نسخه
-* **نسخه فعال:** `v1.4.0` (نشان نسخه در گوشه بالای برنامه درج شده است).
+## 📌 Active Version / نسخه فعال
+* **`v1.5.0`**
