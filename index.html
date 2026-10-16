@@ -1451,8 +1451,24 @@
                 if (Array.isArray(item.projects) && item.projects.length > 0) {
                     item.projects.forEach(tag => {
                         const tagBadge = document.createElement('span');
-                        tagBadge.className = 'px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100 font-bold text-[10px]';
+                        tagBadge.className = 'px-2 py-0.5 rounded-md bg-indigo-50 hover:bg-indigo-100 active:scale-95 text-indigo-600 border border-indigo-100 font-bold text-[10px] cursor-pointer transition select-none';
+                        tagBadge.title = 'دبل‌کلیک یا کلیک برای فیلتر این تگ';
                         tagBadge.textContent = `#${tag}`;
+                        
+                        // تابع مشترک اعمال فیلتر بر اساس تگ
+                        const applyTagFilter = (e) => {
+                            e.stopPropagation();
+                            currentProjectFilter = tag;
+                            displayLimit = PAGE_STEP;
+                            renderProjectsBar();
+                            renderUI();
+                            showNotification(`فیلتر روی برچسب «${tag}» فعال شد`);
+                        };
+
+                        // پشتیبانی همزمان از دبل‌کلیک و کلیک برای سازگاری دسکتاپ و موبایل
+                        tagBadge.ondblclick = applyTagFilter;
+                        tagBadge.onclick = applyTagFilter;
+
                         bottomRow.appendChild(tagBadge);
                     });
                 }
