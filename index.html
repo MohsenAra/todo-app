@@ -45,32 +45,37 @@
             <div class="flex items-center justify-between gap-2">
                 <div>
                     <h1 class="text-base sm:text-lg font-black flex items-center gap-1.5 tracking-tight">
-                        <span>کارهای روزمره من</span>
-                        <span id="app-version-badge" class="text-[10px] bg-indigo-800/80 text-indigo-200 px-1.5 py-0.5 rounded-full font-mono font-normal border border-indigo-400/30">v1.4.0</span>
+                        <span id="app-title-text" data-i18n="appTitle">کارهای روزمره من</span>
+                        <span id="app-version-badge" class="text-[10px] bg-indigo-800/80 text-indigo-200 px-1.5 py-0.5 rounded-full font-mono font-normal border border-indigo-400/30">v1.5.0</span>
                     </h1>
                     <div class="flex items-center gap-1.5 mt-0.5 text-[11px] text-indigo-100 font-medium">
                         <span id="sync-status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                        <span id="sync-status-text" class="truncate max-w-[140px] sm:max-w-none">همگام با سرور</span>
+                        <span id="sync-status-text" class="truncate max-w-[140px] sm:max-w-none" data-i18n="syncOnline">همگام با سرور</span>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-1">
+                    <!-- دکمه تغییر زبان -->
+                    <button id="lang-toggle-btn" title="تغییر زبان / Switch Language" class="px-2 py-1.5 rounded-xl bg-indigo-500/60 hover:bg-indigo-500 text-white transition active:scale-95 text-xs font-bold font-mono">
+                        EN
+                    </button>
+
                     <!-- دکمه مجوز اعلان -->
                     <button id="notify-perm-btn" title="فعال‌سازی اعلان یادآوری" class="p-2 rounded-xl bg-indigo-500/60 hover:bg-indigo-500 text-white transition active:scale-95 flex items-center gap-1 text-xs">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                        <span id="notify-perm-label" class="hidden sm:inline text-[11px]">اعلان</span>
+                        <span id="notify-perm-label" class="hidden sm:inline text-[11px]" data-i18n="notifyBtn">اعلان</span>
                     </button>
 
                     <!-- دکمه گزارشات و نمودارها -->
                     <button id="open-reports-btn" title="گزارش و نمودار آماری" class="p-2 rounded-xl bg-indigo-500/60 hover:bg-indigo-500 text-white transition active:scale-95 flex items-center gap-1 text-xs">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                        <span class="hidden sm:inline text-[11px]">گزارش</span>
+                        <span class="hidden sm:inline text-[11px]" data-i18n="reportBtn">گزارش</span>
                     </button>
 
                     <!-- دکمه حساب کاربری و اتصال -->
                     <button id="auth-action-btn" class="p-2 rounded-xl bg-indigo-700/80 hover:bg-indigo-700 text-white transition active:scale-95 flex items-center gap-1 text-xs">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                        <span id="auth-btn-label" class="text-[11px] font-bold">ورود</span>
+                        <span id="auth-btn-label" class="text-[11px] font-bold" data-i18n="loginBtn">ورود</span>
                     </button>
                 </div>
             </div>
@@ -81,6 +86,7 @@
                     type="text" 
                     id="search-input" 
                     placeholder="جستجو در متن یا برچسب‌ها (#)..." 
+                    data-i18n-ph="searchPlaceholder"
                     class="w-full bg-indigo-700/60 text-white placeholder-indigo-200 text-xs px-3 py-1.5 pr-8 rounded-xl focus:outline-none focus:ring-1 focus:ring-white border border-indigo-500/40"
                 >
                 <svg class="w-3.5 h-3.5 text-indigo-200 absolute right-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -93,13 +99,13 @@
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
                 </span>
-                <span class="font-bold text-rose-400 shrink-0">تمرکز:</span>
+                <span class="font-bold text-rose-400 shrink-0" data-i18n="pomoFocus">تمرکز:</span>
                 <span id="pomo-task-name" class="font-semibold truncate text-slate-100 text-[11px]"></span>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
                 <span id="pomo-timer-display" class="font-mono text-xs font-black text-amber-400 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">25:00</span>
                 <button id="pomo-pause-btn" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200">⏸️</button>
-                <button id="pomo-stop-btn" class="px-2 py-0.5 rounded bg-rose-600 hover:bg-rose-700 font-bold text-white text-[11px]">ثبت</button>
+                <button id="pomo-stop-btn" class="px-2 py-0.5 rounded bg-rose-600 hover:bg-rose-700 font-bold text-white text-[11px]" data-i18n="pomoFinish">ثبت</button>
             </div>
         </div>
 
@@ -110,15 +116,15 @@
             <!-- تب‌های فیلتر وضعیت کلی -->
             <div class="flex items-center justify-between gap-1 mb-2">
                 <div class="flex bg-slate-200/80 p-0.5 rounded-xl text-xs flex-1">
-                    <button class="filter-tab flex-1 py-1 text-center font-bold rounded-lg text-slate-600 transition" data-filter="all">همه</button>
-                    <button class="filter-tab flex-1 py-1 text-center font-bold rounded-lg text-slate-600 transition" data-filter="active">فعال</button>
-                    <button class="filter-tab flex-1 py-1 text-center font-bold rounded-lg text-slate-600 transition" data-filter="completed">انجام‌شده</button>
-                    <button class="filter-tab flex-1 py-1 text-center font-bold rounded-lg text-slate-600 transition" data-filter="archived">آرشیو</button>
+                    <button class="filter-tab flex-1 py-1 text-center font-bold rounded-lg text-slate-600 transition" data-filter="all" data-i18n="filterAll">همه</button>
+                    <button class="filter-tab flex-1 py-1 text-center font-bold rounded-lg text-slate-600 transition" data-filter="active" data-i18n="filterActive">فعال</button>
+                    <button class="filter-tab flex-1 py-1 text-center font-bold rounded-lg text-slate-600 transition" data-filter="completed" data-i18n="filterDone">انجام‌شده</button>
+                    <button class="filter-tab flex-1 py-1 text-center font-bold rounded-lg text-slate-600 transition" data-filter="archived" data-i18n="filterArchived">آرشیو</button>
                 </div>
                 <!-- دکمه باز کردن مدیریت برچسب‌ها -->
                 <button id="open-tags-manager-btn" title="مدیریت کامل برچسب‌ها" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-2.5 py-1.5 rounded-xl text-[11px] font-bold shrink-0 transition flex items-center gap-1">
                     <span>🏷️</span>
-                    <span>برچسب‌ها</span>
+                    <span data-i18n="tagsManagerBtn">برچسب‌ها</span>
                 </button>
             </div>
 
@@ -130,14 +136,14 @@
             <!-- فیلتر بازه تاریخ در حالت آرشیو (به طور پیش‌فرض پنهان) -->
             <div id="archive-filter-row" class="hidden mt-2 pt-2 border-t border-slate-200 flex items-center justify-between gap-1.5 text-xs">
                 <div class="flex items-center gap-1 flex-1">
-                    <span class="text-slate-500 text-[10px]">از:</span>
+                    <span class="text-slate-500 text-[10px]" data-i18n="dateFrom">از:</span>
                     <input type="date" id="archive-date-from" class="bg-white border border-slate-300 rounded-lg px-1.5 py-0.5 text-[10px] w-full">
                 </div>
                 <div class="flex items-center gap-1 flex-1">
-                    <span class="text-slate-500 text-[10px]">تا:</span>
+                    <span class="text-slate-500 text-[10px]" data-i18n="dateTo">تا:</span>
                     <input type="date" id="archive-date-to" class="bg-white border border-slate-300 rounded-lg px-1.5 py-0.5 text-[10px] w-full">
                 </div>
-                <button id="clear-archive-filter-btn" class="text-rose-600 hover:underline text-[10px] font-bold shrink-0">حذف فیلتر</button>
+                <button id="clear-archive-filter-btn" class="text-rose-600 hover:underline text-[10px] font-bold shrink-0" data-i18n="clearFilter">حذف فیلتر</button>
             </div>
         </div>
 
@@ -149,13 +155,13 @@
             <!-- وضعیت خالی نبود تسک -->
             <div id="empty-state" class="py-12 flex flex-col items-center justify-center text-slate-400 text-center">
                 <div class="w-12 h-12 rounded-2xl bg-slate-200 flex items-center justify-center text-xl mb-2">📋</div>
-                <p class="text-xs font-bold text-slate-600">کاری برای نمایش وجود ندارد</p>
-                <p class="text-[11px] text-slate-400 mt-0.5">کار جدیدی ثبت کنید یا فیلتر را تغییر دهید</p>
+                <p class="text-xs font-bold text-slate-600" data-i18n="emptyTitle">کاری برای نمایش وجود ندارد</p>
+                <p class="text-[11px] text-slate-400 mt-0.5" data-i18n="emptySub">کار جدیدی ثبت کنید یا فیلتر را تغییر دهید</p>
             </div>
 
             <!-- دکمه نمایش کارهای بیشتر (Lazy Loading) -->
             <div id="load-more-container" class="hidden pt-2 text-center">
-                <button id="load-more-btn" class="bg-white border border-slate-200 hover:bg-slate-50 text-indigo-600 text-xs font-bold px-4 py-1.5 rounded-xl shadow-sm transition">
+                <button id="load-more-btn" class="bg-white border border-slate-200 hover:bg-slate-50 text-indigo-600 text-xs font-bold px-4 py-1.5 rounded-xl shadow-sm transition" data-i18n="loadMore">
                     نمایش موارد بیشتر...
                 </button>
             </div>
@@ -165,27 +171,27 @@
             <!-- نوار برچسب‌های انتخابی برای تسک جدید -->
             <div class="mb-2">
                 <div class="flex items-center justify-between gap-1 mb-1">
-                    <span class="text-[11px] font-bold text-slate-600">برچسب‌ها:</span>
-                    <span id="selected-tags-summary" class="text-[10px] text-slate-400 font-medium">هیچ برچسبی انتخاب نشده</span>
+                    <span class="text-[11px] font-bold text-slate-600" data-i18n="tagsLabel">برچسب‌ها:</span>
+                    <span id="selected-tags-summary" class="text-[10px] text-slate-400 font-medium" data-i18n="noTagSelected">هیچ برچسبی انتخاب نشده</span>
                 </div>
                 <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                     <!-- چیپ‌های برچسب‌های پرکاربرد -->
                     <div id="quick-tags-container" class="flex items-center gap-1"></div>
                     <!-- منوی دراپ‌داون برای سایر برچسب‌ها -->
                     <select id="other-tags-select" class="text-[11px] bg-slate-100 border border-slate-300 text-slate-700 rounded-lg px-2 py-1 outline-none">
-                        <option value="">+ سایر برچسب‌ها...</option>
+                        <option value="" data-i18n="otherTagsOpt">+ سایر برچسب‌ها...</option>
                     </select>
                 </div>
             </div>
 
-            <!-- فیلدهای تخمین زمان و تاریخ (تنها در صورتی نمایش داده می‌شوند که تگ زمان‌دار انتخاب شود) -->
+            <!-- فیلدهای تخمین زمان و تاریخ -->
             <div id="time-tracking-fields" class="hidden mb-2 p-2 bg-indigo-50/70 border border-indigo-100 rounded-xl flex items-center gap-2 text-xs">
                 <div class="flex-1">
-                    <label class="block text-[10px] font-bold text-indigo-900 mb-0.5">تخمین زمان (دقیقه):</label>
-                    <input type="number" id="task-est-minutes" placeholder="مثلاً: 45" class="w-full bg-white border border-indigo-200 rounded-lg px-2 py-1 text-xs outline-none">
+                    <label class="block text-[10px] font-bold text-indigo-900 mb-0.5" data-i18n="estMinLabel">تخمین زمان (دقیقه):</label>
+                    <input type="number" id="task-est-minutes" placeholder="45" class="w-full bg-white border border-indigo-200 rounded-lg px-2 py-1 text-xs outline-none">
                 </div>
                 <div class="flex-1">
-                    <label class="block text-[10px] font-bold text-indigo-900 mb-0.5">تاریخ سررسید:</label>
+                    <label class="block text-[10px] font-bold text-indigo-900 mb-0.5" data-i18n="dueDateLabel">تاریخ سررسید:</label>
                     <input type="date" id="task-due-date" class="w-full bg-white border border-indigo-200 rounded-lg px-2 py-1 text-xs outline-none">
                 </div>
             </div>
@@ -196,6 +202,7 @@
                     type="text" 
                     id="task-input" 
                     placeholder="کار جدید را بنویسید یا بگویید..." 
+                    data-i18n-ph="taskInputPlaceholder"
                     class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
                     autocomplete="off"
                     required
@@ -204,7 +211,7 @@
                 <button 
                     type="button" 
                     id="voice-input-btn"
-                    title="گفتن متن با صدا (فارسی)"
+                    title="گفتن متن با صدا"
                     class="bg-slate-100 hover:bg-slate-200 text-slate-700 active:scale-95 font-bold p-2.5 rounded-xl border border-slate-200 shadow-sm transition flex items-center justify-center shrink-0"
                 >
                     <svg id="mic-icon" class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
@@ -219,37 +226,34 @@
             </form>
         </footer>
 
-        
         <!-- ۱. مودال گزارشات و نمودارها -->
         <div id="reports-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3">
             <div class="bg-white rounded-3xl w-full max-w-sm max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
                 <div class="p-3.5 bg-indigo-600 text-white flex items-center justify-between">
-                    <h3 class="font-bold text-sm">📊 گزارش تحلیلی کارها</h3>
+                    <h3 class="font-bold text-sm" data-i18n="reportsTitle">📊 گزارش تحلیلی کارها</h3>
                     <button id="close-reports-btn" class="p-1 rounded-lg hover:bg-indigo-700 text-white">✕</button>
                 </div>
                 <div class="p-4 overflow-y-auto no-scrollbar space-y-4 text-xs">
-                    <!-- کارت‌های آمار کلیدی -->
                     <div class="grid grid-cols-2 gap-2 text-center">
                         <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-2xl">
-                            <span class="text-slate-400 text-[10px] block">کل کارها</span>
+                            <span class="text-slate-400 text-[10px] block" data-i18n="repTotal">کل کارها</span>
                             <span id="rep-total-tasks" class="text-lg font-black text-slate-800">0</span>
                         </div>
                         <div class="bg-emerald-50 border border-emerald-200 p-2.5 rounded-2xl">
-                            <span class="text-emerald-600 text-[10px] block">تکمیل‌شده</span>
+                            <span class="text-emerald-600 text-[10px] block" data-i18n="repDone">تکمیل‌شده</span>
                             <span id="rep-done-tasks" class="text-lg font-black text-emerald-700">0</span>
                         </div>
                         <div class="bg-indigo-50 border border-indigo-200 p-2.5 rounded-2xl">
-                            <span class="text-indigo-600 text-[10px] block">درصد تکمیل</span>
+                            <span class="text-indigo-600 text-[10px] block" data-i18n="repRate">درصد تکمیل</span>
                             <span id="rep-percent" class="text-lg font-black text-indigo-700">0%</span>
                         </div>
                         <div class="bg-amber-50 border border-amber-200 p-2.5 rounded-2xl">
-                            <span class="text-amber-600 text-[10px] block">زمان واقعی مصرفی</span>
+                            <span class="text-amber-600 text-[10px] block" data-i18n="repActual">زمان واقعی مصرفی</span>
                             <span id="rep-actual-time" class="text-lg font-black text-amber-700">0 د</span>
                         </div>
                     </div>
-                    <!-- نمودار میله‌ای مقایسه کارها -->
                     <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-2xl">
-                        <h4 class="font-bold text-[11px] text-slate-700 mb-2">مقایسه برنامه‌ریزی و اجرا در برچسب‌ها:</h4>
+                        <h4 class="font-bold text-[11px] text-slate-700 mb-2" data-i18n="repChartTitle">مقایسه برنامه‌ریزی و اجرا در برچسب‌ها:</h4>
                         <canvas id="tasks-chart" height="180"></canvas>
                     </div>
                 </div>
@@ -260,23 +264,21 @@
         <div id="tags-manager-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3">
             <div class="bg-white rounded-3xl w-full max-w-sm max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
                 <div class="p-3.5 bg-slate-900 text-white flex items-center justify-between">
-                    <h3 class="font-bold text-sm">🏷️ مدیریت برچسب‌ها و پروژه‌ها</h3>
+                    <h3 class="font-bold text-sm" data-i18n="manageTagsHeading">🏷️ مدیریت برچسب‌ها و پروژه‌ها</h3>
                     <button id="close-tags-manager-btn" class="p-1 rounded-lg hover:bg-slate-800 text-slate-300">✕</button>
                 </div>
                 <div class="p-3.5 overflow-y-auto no-scrollbar space-y-3 text-xs flex-1">
-                    <!-- فرم افزودن برچسب نو -->
                     <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
-                        <label class="block font-bold text-slate-700 text-[11px]">افزودن برچسب یا پروژه جدید:</label>
-                        <input type="text" id="manager-new-tag-name" placeholder="نام برچسب (مثلاً: پروژه شرکت)..." class="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs outline-none">
+                        <label class="block font-bold text-slate-700 text-[11px]" data-i18n="addTagLabel">افزودن برچسب یا پروژه جدید:</label>
+                        <input type="text" id="manager-new-tag-name" placeholder="نام برچسب (مثلاً: پروژه شرکت)..." data-i18n-ph="newTagPlaceholder" class="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs outline-none">
                         <label class="flex items-center gap-1.5 cursor-pointer text-[11px] text-slate-600">
                             <input type="checkbox" id="manager-new-tag-tracking" class="rounded text-indigo-600">
-                            <span>نیاز به تخمین زمان و سررسید دارد</span>
+                            <span data-i18n="tagNeedTimeCheck">نیاز به تخمین زمان و سررسید دارد</span>
                         </label>
-                        <button id="manager-add-tag-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 rounded-xl font-bold transition">افزودن به لیست</button>
+                        <button id="manager-add-tag-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 rounded-xl font-bold transition" data-i18n="addTagToListBtn">افزودن به لیست</button>
                     </div>
-                    <!-- لیست برچسب‌های موجود -->
                     <div>
-                        <h4 class="font-bold text-slate-700 text-[11px] mb-1.5">برچسب‌های تعریف‌شده:</h4>
+                        <h4 class="font-bold text-slate-700 text-[11px] mb-1.5" data-i18n="definedTagsTitle">برچسب‌های تعریف‌شده:</h4>
                         <div id="manager-tags-list" class="space-y-1.5">
                             <!-- به صورت پویا با جاوااسکریپت پر می‌شود -->
                         </div>
@@ -288,15 +290,15 @@
         <!-- ۳. مودال ثبت دستی زمان واقعی صرف‌شده -->
         <div id="actual-time-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3">
             <div class="bg-white rounded-3xl w-full max-w-xs p-4 shadow-2xl text-xs space-y-3">
-                <h3 class="font-bold text-sm text-slate-800">⏱️ ثبت زمان واقعی صرف‌شده</h3>
+                <h3 class="font-bold text-sm text-slate-800" data-i18n="actualTimeModalTitle">⏱️ ثبت زمان واقعی صرف‌شده</h3>
                 <p id="actual-time-task-title" class="text-slate-500 text-[11px] truncate"></p>
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">دقیقه واقعی:</label>
-                    <input type="number" id="actual-minutes-input" placeholder="مثلاً: 30" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 outline-none">
+                    <label class="block font-bold text-slate-700 mb-1" data-i18n="actualMinLabel">دقیقه واقعی:</label>
+                    <input type="number" id="actual-minutes-input" placeholder="30" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 outline-none">
                 </div>
                 <div class="flex items-center gap-1.5 pt-1">
-                    <button id="cancel-actual-time-btn" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded-xl font-bold">انصراف</button>
-                    <button id="save-actual-time-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 rounded-xl font-bold">ذخیره زمان</button>
+                    <button id="cancel-actual-time-btn" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded-xl font-bold" data-i18n="cancelBtn">انصراف</button>
+                    <button id="save-actual-time-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 rounded-xl font-bold" data-i18n="saveTimeBtn">ذخیره زمان</button>
                 </div>
             </div>
         </div>
@@ -305,11 +307,10 @@
         <div id="user-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3">
             <div class="bg-white rounded-3xl w-full max-w-xs p-4 shadow-2xl text-xs space-y-3">
                 <div class="flex items-center justify-between pb-1 border-b border-slate-100">
-                    <h3 class="font-bold text-sm text-slate-800">حساب کاربری و سینک</h3>
+                    <h3 class="font-bold text-sm text-slate-800" data-i18n="userModalTitle">حساب کاربری و سینک</h3>
                     <button id="close-user-modal-btn" class="text-slate-400 hover:text-slate-600">✕</button>
                 </div>
 
-                <!-- بخش در صورت لاگین بودن -->
                 <div id="logged-in-section" class="hidden space-y-3">
                     <div class="flex items-center gap-2.5 bg-slate-50 p-2.5 rounded-2xl border border-slate-200">
                         <img id="modal-user-avatar" src="" class="w-9 h-9 rounded-full bg-slate-200">
@@ -318,19 +319,18 @@
                             <p id="modal-user-email" class="text-[10px] text-slate-400 truncate"></p>
                         </div>
                     </div>
-                    <button id="disconnect-btn" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 py-2 rounded-xl font-bold transition">خروج و قطع اتصال</button>
+                    <button id="disconnect-btn" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 py-2 rounded-xl font-bold transition" data-i18n="logoutBtn">خروج و قطع اتصال</button>
                 </div>
 
-                <!-- بخش انتخاب روش لاگین -->
                 <div id="login-options-section" class="space-y-2.5">
                     <button id="google-login-btn" class="w-full flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 py-2 rounded-xl font-bold shadow-sm transition">
                         <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-                        <span>ورود با اکانت گوگل</span>
+                        <span data-i18n="googleLoginBtn">ورود با اکانت گوگل</span>
                     </button>
-                    <div class="relative text-center my-1"><span class="bg-white px-2 text-[10px] text-slate-400">یا شناسه سفارشی</span></div>
+                    <div class="relative text-center my-1"><span class="bg-white px-2 text-[10px] text-slate-400" data-i18n="orCustomKey">یا شناسه سفارشی</span></div>
                     <form id="key-sync-form" class="space-y-1.5">
-                        <input type="text" id="custom-sync-key" placeholder="مثلاً: کلید مشترک خانه..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs outline-none">
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 rounded-xl font-bold transition">اتصال با شناسه</button>
+                        <input type="text" id="custom-sync-key" placeholder="کلید مشترک..." data-i18n-ph="customKeyPlaceholder" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs outline-none">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 rounded-xl font-bold transition" data-i18n="connectKeyBtn">اتصال با شناسه</button>
                     </form>
                 </div>
             </div>
@@ -342,6 +342,224 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // دیکشنری بین‌المللی چندزبانه (i18n)
+        const i18n = {
+            fa: {
+                appTitle: "کارهای روزمره من",
+                syncOnline: "همگام با سرور",
+                syncOffline: "حالت محلی",
+                syncError: "خطای دسترسی سرور",
+                notifyBtn: "اعلان",
+                notifyActive: "فعال",
+                reportBtn: "گزارش",
+                loginBtn: "ورود",
+                connectedBtn: "متصل",
+                searchPlaceholder: "جستجو در متن یا برچسب‌ها (#)...",
+                pomoFocus: "تمرکز:",
+                pomoFinish: "ثبت",
+                filterAll: "همه",
+                filterActive: "فعال",
+                filterDone: "انجام‌شده",
+                filterArchived: "آرشیو",
+                tagsManagerBtn: "برچسب‌ها",
+                allTasksTab: "همه کارها",
+                dateFrom: "از:",
+                dateTo: "تا:",
+                clearFilter: "حذف فیلتر",
+                emptyTitle: "کاری برای نمایش وجود ندارد",
+                emptySub: "کار جدیدی ثبت کنید یا فیلتر را تغییر دهید",
+                loadMore: "نمایش موارد بیشتر...",
+                tagsLabel: "برچسب‌ها:",
+                noTagSelected: "هیچ برچسبی انتخاب نشده",
+                otherTagsOpt: "+ سایر برچسب‌ها...",
+                estMinLabel: "تخمین زمان (دقیقه):",
+                dueDateLabel: "تاریخ سررسید:",
+                taskInputPlaceholder: "کار جدید را بنویسید یا بگویید...",
+                reportsTitle: "📊 گزارش تحلیلی کارها",
+                repTotal: "کل کارها",
+                repDone: "تکمیل‌شده",
+                repRate: "درصد تکمیل",
+                repActual: "زمان واقعی مصرفی",
+                repChartTitle: "مقایسه برنامه‌ریزی و اجرا در برچسب‌ها:",
+                repPlannedLabel: "کل",
+                repCompletedLabel: "انجام‌شده",
+                manageTagsHeading: "🏷️ مدیریت برچسب‌ها و پروژه‌ها",
+                addTagLabel: "افزودن برچسب یا پروژه جدید:",
+                newTagPlaceholder: "نام برچسب (مثلاً: پروژه شرکت)...",
+                tagNeedTimeCheck: "نیاز به تخمین زمان و سررسید دارد",
+                addTagToListBtn: "افزودن به لیست",
+                definedTagsTitle: "برچسب‌های تعریف‌شده:",
+                noTagDefined: "هیچ برچسبی تعریف نشده است.",
+                tagTimedBadge: "زمان‌دار",
+                deleteBtn: "حذف",
+                actualTimeModalTitle: "⏱️ ثبت زمان واقعی صرف‌شده",
+                actualMinLabel: "دقیقه واقعی:",
+                cancelBtn: "انصراف",
+                saveTimeBtn: "ذخیره زمان",
+                userModalTitle: "حساب کاربری و سینک",
+                logoutBtn: "خروج و قطع اتصال",
+                googleLoginBtn: "ورود با اکانت گوگل",
+                orCustomKey: "یا شناسه سفارشی",
+                customKeyPlaceholder: "مثلاً: کلید مشترک خانه...",
+                connectKeyBtn: "اتصال با شناسه",
+                tagFilterTooltip: "کلیک برای فیلتر این برچسب",
+                estPrefix: "تخمین:",
+                actPrefix: "واقعی:",
+                minUnit: "د",
+                recordActualBtn: "⏱️ ثبت زمان",
+                restoreBtn: "بازگردانی",
+                archiveBtn: "آرشیو",
+                pomoBtnText: "🍅 تمرکز",
+                taskSavedToast: "کار جدید ذخیره شد",
+                listeningToast: "🎤 در حال شنیدن صدای شما... بگویید",
+                micPermissionToast: "⚠️ لطفاً مجوز دسترسی به میکروفون را تأیید کنید",
+                noSpeechToast: "صدایی شنیده نشد، دوباره امتحان کنید",
+                micNotSupportedToast: "مرورگر شما از تشخیص گفتار صوتی پشتیبانی نمی‌کند",
+                pomoCompletedToast: "🍅 پایان تمرکز",
+                pomoBodyToast: "تمرکز روی کار تکمیل شد.",
+                pomoSavedTimeToast: "دقیقه روی کار ثبت شد",
+                notifyActivatedToast: "اعلان‌ها فعال شدند",
+                notifyNotSupported: "مرورگر از نوتیفیکیشن پشتیبانی نمی‌کند",
+                enterTagNameToast: "لطفاً نام برچسب را وارد کنید",
+                tagDuplicateToast: "این برچسب از قبل تعریف شده است",
+                tagAddedToast: "با موفقیت افزوده شد",
+                tagRemovedToast: "حذف شد",
+                timeSavedToast: "زمان با موفقیت ثبت شد",
+                loginSuccessToast: "ورود با گوگل با موفقیت انجام شد",
+                roomConnectedToast: "متصل به اتاق:",
+                logoutToast: "خروج با موفقیت انجام شد"
+            },
+            en: {
+                appTitle: "Daily Tasks Manager",
+                syncOnline: "Synced with Cloud",
+                syncOffline: "Local Mode",
+                syncError: "Server Permission Error",
+                notifyBtn: "Notify",
+                notifyActive: "Active",
+                reportBtn: "Reports",
+                loginBtn: "Login",
+                connectedBtn: "Connected",
+                searchPlaceholder: "Search tasks or tags (#)...",
+                pomoFocus: "Focus:",
+                pomoFinish: "Log",
+                filterAll: "All",
+                filterActive: "Active",
+                filterDone: "Completed",
+                filterArchived: "Archive",
+                tagsManagerBtn: "Tags",
+                allTasksTab: "All Tasks",
+                dateFrom: "From:",
+                dateTo: "To:",
+                clearFilter: "Clear Filter",
+                emptyTitle: "No tasks to display",
+                emptySub: "Add a new task or adjust the filter",
+                loadMore: "Load more...",
+                tagsLabel: "Tags:",
+                noTagSelected: "No tags selected",
+                otherTagsOpt: "+ More tags...",
+                estMinLabel: "Est. Time (min):",
+                dueDateLabel: "Due Date:",
+                taskInputPlaceholder: "Type or speak your task...",
+                reportsTitle: "📊 Task Performance Reports",
+                repTotal: "Total Tasks",
+                repDone: "Completed",
+                repRate: "Completion Rate",
+                repActual: "Actual Time Spent",
+                repChartTitle: "Planned vs Completed by Tag:",
+                repPlannedLabel: "Total",
+                repCompletedLabel: "Completed",
+                manageTagsHeading: "🏷️ Tag & Project Management",
+                addTagLabel: "Add new tag or project:",
+                newTagPlaceholder: "Tag name (e.g. Work Project)...",
+                tagNeedTimeCheck: "Requires time estimate and due date",
+                addTagToListBtn: "Add to List",
+                definedTagsTitle: "Existing Tags:",
+                noTagDefined: "No tags defined yet.",
+                tagTimedBadge: "Timed",
+                deleteBtn: "Delete",
+                actualTimeModalTitle: "⏱️ Log Actual Spent Time",
+                actualMinLabel: "Actual minutes:",
+                cancelBtn: "Cancel",
+                saveTimeBtn: "Save Time",
+                userModalTitle: "Account & Cloud Sync",
+                logoutBtn: "Log out & Disconnect",
+                googleLoginBtn: "Sign in with Google",
+                orCustomKey: "Or Custom Room ID",
+                customKeyPlaceholder: "e.g. Home shared key...",
+                connectKeyBtn: "Connect with ID",
+                tagFilterTooltip: "Click to filter by this tag",
+                estPrefix: "Est:",
+                actPrefix: "Act:",
+                minUnit: "m",
+                recordActualBtn: "⏱️ Log Time",
+                restoreBtn: "Restore",
+                archiveBtn: "Archive",
+                pomoBtnText: "🍅 Focus",
+                taskSavedToast: "New task saved",
+                listeningToast: "🎤 Listening to your voice... Speak now",
+                micPermissionToast: "⚠️ Please grant microphone permission",
+                noSpeechToast: "No speech heard, try again",
+                micNotSupportedToast: "Your browser does not support Speech Recognition",
+                pomoCompletedToast: "🍅 Focus Session Completed",
+                pomoBodyToast: "Focus session completed successfully.",
+                pomoSavedTimeToast: "minutes recorded on task",
+                notifyActivatedToast: "Notifications activated",
+                notifyNotSupported: "Browser does not support notifications",
+                enterTagNameToast: "Please enter a tag name",
+                tagDuplicateToast: "This tag already exists",
+                tagAddedToast: "added successfully",
+                tagRemovedToast: "deleted",
+                timeSavedToast: "Time saved successfully",
+                loginSuccessToast: "Logged in with Google successfully",
+                roomConnectedToast: "Connected to room:",
+                logoutToast: "Logged out successfully"
+            }
+        };
+
+        const LANG_STORAGE_KEY = 'MY_TODO_LANG';
+        let currentLang = localStorage.getItem(LANG_STORAGE_KEY) || 'fa';
+
+        function t(key) {
+            return (i18n[currentLang] && i18n[currentLang][key]) || key;
+        }
+
+        function applyLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem(LANG_STORAGE_KEY, lang);
+            document.documentElement.lang = lang;
+            document.documentElement.dir = (lang === 'fa') ? 'rtl' : 'ltr';
+
+            // دکمه سوییچ زبان
+            const langToggleBtn = document.getElementById('lang-toggle-btn');
+            if (langToggleBtn) {
+                langToggleBtn.textContent = lang === 'fa' ? 'EN' : 'فا';
+            }
+
+            // متن‌های ایستا دارای data-i18n
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const k = el.getAttribute('data-i18n');
+                if (k && i18n[lang][k]) {
+                    el.textContent = i18n[lang][k];
+                }
+            });
+
+            // پلیس‌هولدرها دارای data-i18n-ph
+            document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+                const k = el.getAttribute('data-i18n-ph');
+                if (k && i18n[lang][k]) {
+                    el.placeholder = i18n[lang][k];
+                }
+            });
+
+            // تنظیم زبان صوت بر اساس زبان جاری
+            if (recognizer) {
+                recognizer.lang = (lang === 'fa') ? 'fa-IR' : 'en-US';
+            }
+
+            renderProjectsBar();
+            renderUI();
+        }
 
         // کانفیگ اختصاصی فایربیس
         const firebaseConfig = {
@@ -357,14 +575,14 @@
         const LOCAL_STORAGE_KEY = 'MY_SYNC_TODO_DATA';
         const ACTIVE_SYNC_ID_KEY = 'MY_ACTIVE_SYNC_ID';
         const PROJECTS_STORAGE_KEY = 'MY_SYNC_PROJECTS_DATA';
-        const ALL_PROJECTS_TAB = 'همه کارها';
+        const ALL_PROJECTS_TAB_KEY = 'ALL_PROJECTS_SPECIAL_TAB';
 
         // متغیرهای وضعیت
         let todos = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
         let projects = JSON.parse(localStorage.getItem(PROJECTS_STORAGE_KEY) || '[]');
         let selectedTagsForNewTask = new Set();
         let currentFilter = 'all';
-        let currentProjectFilter = ALL_PROJECTS_TAB;
+        let currentProjectFilter = ALL_PROJECTS_TAB_KEY;
         let searchQuery = '';
         let archiveDateFrom = null;
         let archiveDateTo = null;
@@ -402,6 +620,7 @@
         const timeTrackingFields = document.getElementById('time-tracking-fields');
         const taskEstMinutes = document.getElementById('task-est-minutes');
         const taskDueDate = document.getElementById('task-due-date');
+        const langToggleBtn = document.getElementById('lang-toggle-btn');
 
         // مودال‌ها و دکمه‌ها
         const reportsModal = document.getElementById('reports-modal');
@@ -430,6 +649,12 @@
         const notifyPermBtn = document.getElementById('notify-perm-btn');
         const notifyPermLabel = document.getElementById('notify-perm-label');
 
+        if (langToggleBtn) {
+            langToggleBtn.onclick = () => {
+                applyLanguage(currentLang === 'fa' ? 'en' : 'fa');
+            };
+        }
+
         function showNotification(msg) {
             toastMsg.textContent = msg;
             toastMsg.classList.remove('opacity-0');
@@ -455,10 +680,10 @@
                     userPhoto: currentUser ? currentUser.photoURL : '',
                     lastUpdated: new Date().toISOString()
                 }, { merge: true });
-                updateSyncUI(true, 'همگام با سرور');
+                updateSyncUI(true, t('syncOnline'));
             } catch (err) {
-                console.error("خطای سینک ابری:", err);
-                updateSyncUI(false, 'خطای دسترسی سرور');
+                console.error("Cloud sync error:", err);
+                updateSyncUI(false, t('syncError'));
             }
         }
 
@@ -481,11 +706,11 @@
                     localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
                     renderProjectsBar();
                     renderUI();
-                    updateSyncUI(true, 'همگام با سرور');
+                    updateSyncUI(true, t('syncOnline'));
                 }
             }, (error) => {
-                console.error("خطای شنونده ابری:", error);
-                updateSyncUI(false, 'دسترسی مجاز نیست');
+                console.error("Cloud listener error:", error);
+                updateSyncUI(false, t('syncError'));
             });
         }
 
@@ -502,10 +727,10 @@
             projectsBar.innerHTML = '';
             const allBtn = document.createElement('button');
             allBtn.className = `px-2.5 py-1 rounded-xl font-bold shrink-0 transition ${
-                currentProjectFilter === ALL_PROJECTS_TAB ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200'
+                currentProjectFilter === ALL_PROJECTS_TAB_KEY ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200'
             }`;
-            allBtn.textContent = `${ALL_PROJECTS_TAB} (${todos.filter(t => !t.archived && !t.done).length})`;
-            allBtn.onclick = () => { currentProjectFilter = ALL_PROJECTS_TAB; renderProjectsBar(); renderUI(); };
+            allBtn.textContent = `${t('allTasksTab')} (${todos.filter(t => !t.archived && !t.done).length})`;
+            allBtn.onclick = () => { currentProjectFilter = ALL_PROJECTS_TAB_KEY; renderProjectsBar(); renderUI(); };
             projectsBar.appendChild(allBtn);
 
             projects.forEach(p => {
@@ -538,7 +763,7 @@
             });
 
             // کمبوباکس سایر تگ‌ها
-            otherTagsSelect.innerHTML = '<option value="">+ سایر برچسب‌ها...</option>';
+            otherTagsSelect.innerHTML = `<option value="">${t('otherTagsOpt')}</option>`;
             remainingProjects.forEach(p => {
                 const opt = document.createElement('option');
                 opt.value = p.name;
@@ -568,9 +793,9 @@
 
         function updateTagSelectionSummary() {
             if (selectedTagsForNewTask.size === 0) {
-                selectedTagsSummary.textContent = 'بدون برچسب';
+                selectedTagsSummary.textContent = t('noTagSelected');
             } else {
-                selectedTagsSummary.textContent = Array.from(selectedTagsForNewTask).map(t => `#${t}`).join(' ');
+                selectedTagsSummary.textContent = Array.from(selectedTagsForNewTask).map(tg => `#${tg}`).join(' ');
             }
         }
 
@@ -605,7 +830,7 @@
             });
 
             // فیلتر برچسب جاری
-            if (currentProjectFilter !== ALL_PROJECTS_TAB) {
+            if (currentProjectFilter !== ALL_PROJECTS_TAB_KEY) {
                 filtered = filtered.filter(item => (item.tags || []).includes(currentProjectFilter));
             }
 
@@ -662,7 +887,7 @@
                 if (!item.done && !item.archived) {
                     const pomoBtn = document.createElement('button');
                     pomoBtn.className = 'px-1.5 py-1 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold text-[11px] transition';
-                    pomoBtn.innerHTML = '🍅 تمرکز';
+                    pomoBtn.innerHTML = t('pomoBtnText');
                     pomoBtn.onclick = () => startPomodoro(item);
                     actions.appendChild(pomoBtn);
                 }
@@ -671,7 +896,7 @@
                 if (item.done || item.archived) {
                     const archBtn = document.createElement('button');
                     archBtn.className = 'px-1.5 py-1 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold text-[11px] transition';
-                    archBtn.textContent = item.archived ? 'بازگردانی' : 'آرشیو';
+                    archBtn.textContent = item.archived ? t('restoreBtn') : t('archiveBtn');
                     archBtn.onclick = () => {
                         item.archived = !item.archived;
                         if (item.archived) item.archivedAt = new Date().toISOString();
@@ -702,14 +927,13 @@
                 const bottomRow = document.createElement('div');
                 bottomRow.className = 'mt-2 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-1 text-[11px]';
 
-                // برچسب‌ها با پشتیبانی از دبل‌کلیک و کلیک
                 const tagsWrapper = document.createElement('div');
                 tagsWrapper.className = 'flex flex-wrap gap-1 items-center';
                 (item.tags || []).forEach(tg => {
                     const badge = document.createElement('span');
                     badge.className = 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer transition';
                     badge.textContent = `#${tg}`;
-                    badge.title = 'دبل‌کلیک برای فیلتر این برچسب';
+                    badge.title = t('tagFilterTooltip');
                     badge.onclick = (e) => {
                         e.stopPropagation();
                         currentProjectFilter = tg;
@@ -723,15 +947,14 @@
                 // زمان‌ها (در صورت وجود)
                 if (item.estMinutes || item.actualMinutes || item.dueDate) {
                     const timeWrapper = document.createElement('div');
-                    timeWrapper.className = 'flex items-center gap-1.5 text-[10px] text-slate-500 mr-auto';
-                    if (item.estMinutes) timeWrapper.innerHTML += `<span class="bg-slate-100 px-1.5 py-0.5 rounded">تخمین: ${item.estMinutes}د</span>`;
-                    if (item.actualMinutes) timeWrapper.innerHTML += `<span class="bg-emerald-50 text-emerald-700 font-bold px-1.5 py-0.5 rounded">واقعی: ${item.actualMinutes}د</span>`;
+                    timeWrapper.className = `flex items-center gap-1.5 text-[10px] text-slate-500 ${currentLang === 'fa' ? 'mr-auto' : 'ml-auto'}`;
+                    if (item.estMinutes) timeWrapper.innerHTML += `<span class="bg-slate-100 px-1.5 py-0.5 rounded">${t('estPrefix')} ${item.estMinutes}${t('minUnit')}</span>`;
+                    if (item.actualMinutes) timeWrapper.innerHTML += `<span class="bg-emerald-50 text-emerald-700 font-bold px-1.5 py-0.5 rounded">${t('actPrefix')} ${item.actualMinutes}${t('minUnit')}</span>`;
                     if (item.dueDate) timeWrapper.innerHTML += `<span class="text-rose-600 font-bold">📅 ${item.dueDate}</span>`;
                     
-                    // دکمه ویرایش زمان واقعی
                     const editTimeBtn = document.createElement('button');
-                    editTimeBtn.className = 'text-indigo-600 hover:underline font-bold mr-1';
-                    editTimeBtn.textContent = '⏱️ ثبت زمان';
+                    editTimeBtn.className = 'text-indigo-600 hover:underline font-bold';
+                    editTimeBtn.textContent = t('recordActualBtn');
                     editTimeBtn.onclick = () => openActualTimeModal(item);
                     timeWrapper.appendChild(editTimeBtn);
 
@@ -770,10 +993,10 @@
             saveLocalData();
             renderProjectsBar();
             renderUI();
-            showNotification('کار جدید ذخیره شد');
+            showNotification(t('taskSavedToast'));
         };
 
-        // سیستم پیشرفته تشخیص صوت با سازگاری بالا برای کروم، اج، سافاری و موبایل
+        // سیستم تشخیص گفتار صوتی
         const SpeechRecognitionApi = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognizer = null;
         let isRecordingVoice = false;
@@ -781,7 +1004,7 @@
         if (SpeechRecognitionApi) {
             try {
                 recognizer = new SpeechRecognitionApi();
-                recognizer.lang = 'fa-IR';
+                recognizer.lang = (currentLang === 'fa') ? 'fa-IR' : 'en-US';
                 recognizer.continuous = false;
                 recognizer.interimResults = true;
 
@@ -789,7 +1012,7 @@
                     isRecordingVoice = true;
                     voiceInputBtn.classList.remove('bg-slate-100', 'text-slate-700');
                     voiceInputBtn.classList.add('bg-rose-600', 'text-white', 'ring-2', 'ring-rose-400', 'animate-pulse');
-                    showNotification('🎤 در حال شنیدن صدای شما... بگویید');
+                    showNotification(t('listeningToast'));
                 };
 
                 recognizer.onresult = (evt) => {
@@ -805,11 +1028,11 @@
                 recognizer.onerror = (err) => {
                     console.warn("Speech error:", err.error);
                     if (err.error === 'not-allowed') {
-                        showNotification('⚠️ لطفاً مجوز دسترسی به میکروفون را تأیید کنید');
+                        showNotification(t('micPermissionToast'));
                     } else if (err.error === 'no-speech') {
-                        showNotification('صدایی شنیده نشد، دوباره امتحان کنید');
+                        showNotification(t('noSpeechToast'));
                     } else {
-                        showNotification(`خطا در میکروفون: ${err.error}`);
+                        showNotification(`Mic error: ${err.error}`);
                     }
                 };
 
@@ -827,6 +1050,7 @@
                     }
                     try {
                         taskInput.value = '';
+                        recognizer.lang = (currentLang === 'fa') ? 'fa-IR' : 'en-US';
                         recognizer.start();
                     } catch (e) {
                         recognizer.stop();
@@ -837,9 +1061,8 @@
             }
         } else {
             voiceInputBtn.classList.add('opacity-40', 'cursor-not-allowed');
-            voiceInputBtn.title = 'مرورگر شما از ورودی صوتی پشتیبانی نمی‌کند (در کروم تست کنید)';
             voiceInputBtn.onclick = () => {
-                showNotification('مرورگر شما از تشخیص گفتار صوتی پشتیبانی نمی‌کند');
+                showNotification(t('micNotSupportedToast'));
             };
         }
 
@@ -860,7 +1083,7 @@
 
                 if (pomodoroRemainingSeconds <= 0) {
                     clearInterval(pomodoroTimerInterval);
-                    sendNotification('🍅 پایان تمرکز', `۲۵ دقیقه تمرکز روی «${task.title}» تکمیل شد.`);
+                    sendNotification(t('pomoCompletedToast'), `${t('pomoBodyToast')} (${task.title})`);
                     finishPomodoro(25);
                 }
             }, 1000);
@@ -888,7 +1111,7 @@
         pomoStopBtn.onclick = () => {
             const spent = Math.max(1, Math.round((25 * 60 - pomodoroRemainingSeconds) / 60));
             finishPomodoro(spent);
-            showNotification(`${spent} دقیقه روی کار ثبت شد`);
+            showNotification(`${spent} ${t('pomoSavedTimeToast')}`);
         };
 
         // سیستم اعلان‌ها
@@ -896,16 +1119,16 @@
             if ("Notification" in window && Notification.permission === "granted") {
                 notifyPermBtn.classList.remove('bg-indigo-500/60');
                 notifyPermBtn.classList.add('bg-emerald-500');
-                notifyPermLabel.textContent = 'فعال';
+                notifyPermLabel.textContent = t('notifyActive');
             }
         }
 
         notifyPermBtn.onclick = async () => {
-            if (!("Notification" in window)) return showNotification('مرورگر از نوتیفیکیشن پشتیبانی نمی‌کند');
+            if (!("Notification" in window)) return showNotification(t('notifyNotSupported'));
             const res = await Notification.requestPermission();
             if (res === 'granted') {
                 checkNotificationSupport();
-                showNotification('اعلان‌ها فعال شدند');
+                showNotification(t('notifyActivatedToast'));
             }
         };
 
@@ -930,7 +1153,7 @@
             list.innerHTML = '';
 
             if (projects.length === 0) {
-                list.innerHTML = '<div class="text-center py-4 text-slate-400 text-xs">هیچ برچسبی تعریف نشده است.</div>';
+                list.innerHTML = `<div class="text-center py-4 text-slate-400 text-xs">${t('noTagDefined')}</div>`;
                 return;
             }
 
@@ -949,14 +1172,14 @@
                 if (p.timeTracking) {
                     const badge = document.createElement('span');
                     badge.className = 'text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold shrink-0';
-                    badge.textContent = 'زمان‌دار';
+                    badge.textContent = t('tagTimedBadge');
                     infoDiv.appendChild(badge);
                 }
 
                 const delBtn = document.createElement('button');
                 delBtn.type = 'button';
                 delBtn.className = 'text-rose-600 hover:text-rose-800 hover:bg-rose-50 px-2 py-1 rounded-lg text-xs font-bold transition shrink-0';
-                delBtn.textContent = 'حذف';
+                delBtn.textContent = t('deleteBtn');
                 delBtn.onclick = () => {
                     const tagToRemove = p.name;
                     projects = projects.filter((_, i) => i !== idx);
@@ -964,13 +1187,13 @@
                         selectedTagsForNewTask.delete(tagToRemove);
                     }
                     if (currentProjectFilter === tagToRemove) {
-                        currentProjectFilter = ALL_PROJECTS_TAB;
+                        currentProjectFilter = ALL_PROJECTS_TAB_KEY;
                     }
                     saveLocalData();
                     renderManagerTagsList();
                     renderProjectsBar();
                     renderUI();
-                    showNotification(`برچسب #${tagToRemove} حذف شد`);
+                    showNotification(`#${tagToRemove} ${t('tagRemovedToast')}`);
                 };
 
                 item.appendChild(infoDiv);
@@ -991,15 +1214,14 @@
                 const cleanName = rawVal.replace(/^#+/, '').trim();
 
                 if (!cleanName) {
-                    showNotification('لطفاً نام برچسب را وارد کنید');
+                    showNotification(t('enterTagNameToast'));
                     input.focus();
                     return;
                 }
 
-                // بررسی عدم وجود نام تکراری (حساس به فاصله و حروف)
                 const exists = projects.some(p => p.name.toLowerCase() === cleanName.toLowerCase());
                 if (exists) {
-                    showNotification('این برچسب از قبل تعریف شده است');
+                    showNotification(t('tagDuplicateToast'));
                     input.focus();
                     return;
                 }
@@ -1016,12 +1238,11 @@
                 saveLocalData();
                 renderManagerTagsList();
                 renderProjectsBar();
-                showNotification(`برچسب #${cleanName} با موفقیت افزوده شد`);
+                showNotification(`#${cleanName} ${t('tagAddedToast')}`);
                 input.focus();
             };
         }
 
-        // پشتیبانی از فشردن کلید Enter در اینپوت نام برچسب
         const managerNewTagInput = document.getElementById('manager-new-tag-name');
         if (managerNewTagInput) {
             managerNewTagInput.onkeydown = (e) => {
@@ -1048,7 +1269,7 @@
                 saveLocalData();
                 renderUI();
                 actualTimeModal.classList.add('hidden');
-                showNotification('زمان با موفقیت ثبت شد');
+                showNotification(t('timeSavedToast'));
             }
         };
 
@@ -1068,9 +1289,8 @@
             document.getElementById('rep-total-tasks').textContent = total;
             document.getElementById('rep-done-tasks').textContent = done;
             document.getElementById('rep-percent').textContent = `${percent}%`;
-            document.getElementById('rep-actual-time').textContent = `${totalActual} د`;
+            document.getElementById('rep-actual-time').textContent = `${totalActual} ${t('minUnit')}`;
 
-            // رندر نمودار Chart.js
             const ctx = document.getElementById('tasks-chart').getContext('2d');
             const labels = projects.map(p => p.name);
             const plannedData = projects.map(p => todos.filter(t => (t.tags || []).includes(p.name)).length);
@@ -1082,8 +1302,8 @@
                 data: {
                     labels,
                     datasets: [
-                        { label: 'کل', data: plannedData, backgroundColor: '#818cf8' },
-                        { label: 'انجام‌شده', data: completedData, backgroundColor: '#34d399' }
+                        { label: t('repPlannedLabel'), data: plannedData, backgroundColor: '#818cf8' },
+                        { label: t('repCompletedLabel'), data: completedData, backgroundColor: '#34d399' }
                     ]
                 },
                 options: {
@@ -1131,19 +1351,19 @@
                 if (user) {
                     activeSyncId = user.uid;
                     localStorage.setItem(ACTIVE_SYNC_ID_KEY, activeSyncId);
-                    authBtnLabel.textContent = user.displayName || 'کاربر';
-                    document.getElementById('modal-user-name').textContent = user.displayName || 'کاربر گرامی';
+                    authBtnLabel.textContent = user.displayName || 'User';
+                    document.getElementById('modal-user-name').textContent = user.displayName || 'User';
                     document.getElementById('modal-user-email').textContent = user.email || '';
                     document.getElementById('modal-user-avatar').src = user.photoURL || 'https://placehold.co/100x100/4f46e5/white?text=User';
                     loggedInSection.classList.remove('hidden');
                     loginOptionsSection.classList.add('hidden');
                     listenToCloud(user.uid);
                 } else if (activeSyncId) {
-                    authBtnLabel.textContent = 'متصل';
+                    authBtnLabel.textContent = t('connectedBtn');
                     listenToCloud(activeSyncId);
                 } else {
-                    authBtnLabel.textContent = 'ورود';
-                    updateSyncUI(true, 'حالت محلی');
+                    authBtnLabel.textContent = t('loginBtn');
+                    updateSyncUI(true, t('syncOffline'));
                 }
             });
 
@@ -1152,9 +1372,9 @@
                     const provider = new GoogleAuthProvider();
                     await signInWithPopup(auth, provider);
                     userModal.classList.add('hidden');
-                    showNotification('ورود با گوگل با موفقیت انجام شد');
+                    showNotification(t('loginSuccessToast'));
                 } catch(err) {
-                    showNotification(`خطا در ورود: ${err.message}`);
+                    showNotification(`Error: ${err.message}`);
                 }
             };
 
@@ -1166,7 +1386,7 @@
                 localStorage.setItem(ACTIVE_SYNC_ID_KEY, key);
                 listenToCloud(key);
                 userModal.classList.add('hidden');
-                showNotification(`متصل به اتاق: ${key}`);
+                showNotification(`${t('roomConnectedToast')} ${key}`);
             };
 
             disconnectBtn.onclick = async () => {
@@ -1175,17 +1395,16 @@
                 localStorage.removeItem(ACTIVE_SYNC_ID_KEY);
                 localStorage.removeItem(LOCAL_STORAGE_KEY);
                 todos = [];
-                showNotification('خروج با موفقیت انجام شد');
+                showNotification(t('logoutToast'));
                 setTimeout(() => window.location.reload(), 300);
             };
 
         } catch (e) {
-            console.error("خطای اولیه فایربیس:", e);
+            console.error("Firebase init error:", e);
         }
 
         checkNotificationSupport();
-        renderProjectsBar();
-        renderUI();
+        applyLanguage(currentLang);
     </script>
 </body>
 </html>
