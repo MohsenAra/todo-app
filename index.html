@@ -918,51 +918,118 @@
         openTagsManagerBtn.onclick = () => {
             renderManagerTagsList();
             tagsManagerModal.classList.remove('hidden');
+            const input = document.getElementById('manager-new-tag-name');
+            if (input) input.focus();
         };
         closeTagsManagerBtn.onclick = () => tagsManagerModal.classList.add('hidden');
 
         function renderManagerTagsList() {
             const list = document.getElementById('manager-tags-list');
+            if (!list) return;
             list.innerHTML = '';
-            projects.forEach(p => {
+
+            if (projects.length === 0) {
+                list.innerHTML = '<div class="text-center py-4 text-slate-400 text-xs">هیچ برچسبی تعریف نشده است.</div>';
+                return;
+            }
+
+            projects.forEach((p, idx) => {
                 const item = document.createElement('div');
-                item.className = 'flex items-center justify-between bg-slate-50 border border-slate-200 p-2 rounded-xl text-xs';
-                item.innerHTML = `
-                    <div>
-                        <span class="font-bold text-slate-800">#${p.name}</span>
-                        ${p.timeTracking ? '<span class="text-[9px] bg-indigo-100 text-indigo-700 px-1 py-0.5 rounded mr-1">زمان‌دار</span>' : ''}
-                    </div>
-                `;
-                const del = document.createElement('button');
-                del.className = 'text-rose-600 hover:text-rose-800 text-[11px] font-bold';
-                del.textContent = 'حذف';
-                del.onclick = () => {
-                    projects = projects.filter(x => x.name !== p.name);
+                item.className = 'flex items-center justify-between bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-xs hover:border-slate-300 transition';
+                
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'flex items-center gap-1.5 flex-1 min-w-0';
+                
+                const tagNameSpan = document.createElement('span');
+                tagNameSpan.className = 'font-bold text-slate-800 truncate';
+                tagNameSpan.textContent = `#${p.name}`;
+                infoDiv.appendChild(tagNameSpan);
+
+                if (p.timeTracking) {
+                    const badge = document.createElement('span');
+                    badge.className = 'text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold shrink-0';
+                    badge.textContent = 'زمان‌دار';
+                    infoDiv.appendChild(badge);
+                }
+
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'text-rose-600 hover:text-rose-800 hover:bg-rose-50 px-2 py-1 rounded-lg text-xs font-bold transition shrink-0';
+                delBtn.textContent = 'حذف';
+                delBtn.onclick = () => {
+                    const tagToRemove = p.name;
+                    projects = projects.filter((_, i) => i !== idx);
+                    if (selectedTagsForNewTask.has(tagToRemove)) {
+                        selectedTagsForNewTask.delete(tagToRemove);
+                    }
+                    if (currentProjectFilter === tagToRemove) {
+                        currentProjectFilter = ALL_PROJECTS_TAB;
+                    }
                     saveLocalData();
                     renderManagerTagsList();
                     renderProjectsBar();
                     renderUI();
+                    showNotification(`برچسب #${tagToRemove} حذف شد`);
                 };
-                item.appendChild(del);
+
+                item.appendChild(infoDiv);
+                item.appendChild(delBtn);
                 list.appendChild(item);
             });
         }
 
-        document.getElementById('manager-add-tag-btn').onclick = () => {
-            const input = document.getElementById('manager-new-tag-name');
-            const tracking = document.getElementById('manager-new-tag-tracking');
-            const name = input.value.trim().replace(/^#/, '');
-            if (!name) return;
-            if (projects.some(p => p.name === name)) return showNotification('این برچسب از قبل وجود دارد');
+        const managerAddTagBtn = document.getElementById('manager-add-tag-btn');
+        if (managerAddTagBtn) {
+            managerAddTagBtn.onclick = (e) => {
+                e.preventDefault();
+                const input = document.getElementById('manager-new-tag-name');
+                const tracking = document.getElementById('manager-new-tag-tracking');
+                if (!input) return;
 
-            projects.push({ name, timeTracking: tracking.checked });
-            input.value = '';
-            tracking.checked = false;
-            saveLocalData();
-            renderManagerTagsList();
-            renderProjectsBar();
-            showNotification('برچسب ایجاد شد');
-        };
+                const rawVal = input.value.trim();
+                const cleanName = rawVal.replace(/^#+/, '').trim();
+
+                if (!cleanName) {
+                    showNotification('لطفاً نام برچسب را وارد کنید');
+                    input.focus();
+                    return;
+                }
+
+                // بررسی عدم وجود نام تکراری (حساس به فاصله و حروف)
+                const exists = projects.some(p => p.name.toLowerCase() === cleanName.toLowerCase());
+                if (exists) {
+                    showNotification('این برچسب از قبل تعریف شده است');
+                    input.focus();
+                    return;
+                }
+
+                const newTagObj = {
+                    name: cleanName,
+                    timeTracking: tracking ? tracking.checked : false
+                };
+
+                projects.push(newTagObj);
+                input.value = '';
+                if (tracking) tracking.checked = false;
+
+                saveLocalData();
+                renderManagerTagsList();
+                renderProjectsBar();
+                showNotification(`برچسب #${cleanName} با موفقیت افزوده شد`);
+                input.focus();
+            };
+        }
+
+        // پشتیبانی از فشردن کلید Enter در اینپوت نام برچسب
+        const managerNewTagInput = document.getElementById('manager-new-tag-name');
+        if (managerNewTagInput) {
+            managerNewTagInput.onkeydown = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (managerAddTagBtn) managerAddTagBtn.click();
+                }
+            };
+        }
 
         // مودال زمان واقعی
         function openActualTimeModal(task) {
