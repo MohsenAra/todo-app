@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مدیریت هوشمند کارها (سینک ابری)</title>
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="کارهای من">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234f46e5'><path d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/></svg>">
+    
+    <!-- استایل‌های مدرن با Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .task-done {
+            text-decoration: line-through;
+            opacity: 0.55;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 antialiased flex flex-col items-center justify-center p-0 sm:p-4">
+
+    <!-- کانتینر اصلی اپلیکیشن -->
+    <main class="w-full max-w-md h-screen sm:h-[92vh] bg-white sm:rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden relative border border-slate-200/60">
+        
+        <!-- نوار بالایی هدر -->
+        <header class="bg-indigo-600 text-white p-5 shadow-md">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-xl font-black flex items-center gap-2">
+                        <span>کارهای روزمره من</span>
+                    </h1>
+                    <div class="flex items-center gap-1.5 mt-1 text-xs text-indigo-200">
+                        <span id="sync-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                        <span id="sync-status-text">در انتظار ورود به حساب...</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-1">
+                    <!-- دکمه ورود / پروفایل گوگل -->
+                    <button id="auth-action-btn" title="حساب کاربری" class="p-2 rounded-xl hover:bg-indigo-700/80 active:scale-95 transition bg-indigo-500/40 flex items-center gap-1.5 text-xs font-medium">
+                        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12.24 10.285V13.4h6.887C18.2 16.24 15.65 18 12.24 18c-3.32 0-6-2.69-6-6s2.68-6 6-6c1.49 0 2.85.54 3.9 1.44l2.51-2.5C16.89 3.32 14.7 2.4 12.24 2.4 6.96 2.4 2.68 6.68 2.68 12s4.28 9.6 9.56 9.6c5.52 0 9.2-3.88 9.2-9.36 0-.64-.06-1.26-.17-1.95H12.24z"/>
+                        </svg>
+                        <span id="auth-btn-label">ورود با گوگل</span>
+                    </button>
+                    <!-- دکمه خروجی JSON -->
+                    <button id="export-btn" title="دانلود پشتیبان" class="p-2 rounded-xl hover:bg-indigo-700/80 active:scale-95 transition">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- فیلترها -->
+            <div class="flex gap-2 mt-4 pt-2 border-t border-indigo-500/40 text-xs">
+                <button data-filter="all" class="filter-tab px-3 py-1 rounded-full font-medium bg-white text-indigo-700 shadow-sm transition">همه</button>
+                <button data-filter="active" class="filter-tab px-3 py-1 rounded-full font-medium text-indigo-200 hover:text-white transition">ناتمام</button>
+                <button data-filter="completed" class="filter-tab px-3 py-1 rounded-full font-medium text-indigo-200 hover:text-white transition">انجام‌شده</button>
+            </div>
+        </header>
+
+        <!-- لیست کارها -->
+        <section class="flex-1 p-4 overflow-y-auto no-scrollbar space-y-2.5">
+            <!-- بنر ورود به حساب در صورت عدم لاگین -->
+            <div id="login-banner" class="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl text-xs space-y-2 mb-2 hidden">
+                <p class="font-bold flex items-center gap-1.5">
+                    <span>💡 برای سینک بین دستگاه‌ها وارد شوید</span>
+                </p>
+                <p class="leading-relaxed text-amber-700">با زدن دکمه «ورود با گوگل»، کارهای شما به جیمیل‌تان متصل شده و روی لپ‌تاپ، گوشی و کامپیوتر شرکت همگام می‌مانند.</p>
+                <button id="banner-login-btn" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2 rounded-xl transition shadow-sm">ورود با گوگل</button>
+            </div>
+
+            <div id="todo-list" class="space-y-2">
+                <!-- تسک‌ها اینجا ساخته می‌شوند -->
+            </div>
+
+            <div id="empty-state" class="hidden py-16 text-center text-slate-400">
+                <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-slate-100 flex items-center justify-center">
+                    <svg class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                </div>
+                <p class="text-sm font-medium">هیچ کاری وجود ندارد!</p>
+                <p class="text-xs text-slate-400 mt-1">یک کار جدید در کادر پایین بنویسید</p>
+            </div>
+        </section>
+
+        <!-- فرم افزودن کار جدید -->
+        <footer class="p-3 bg-slate-50 border-t border-slate-200">
+            <form id="add-form" class="flex items-center gap-2">
+                <input 
+                    type="text" 
+                    id="task-input" 
+                    placeholder="کار جدید را بنویسید..." 
+                    class="flex-1 bg-white border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                    autocomplete="off"
+                    required
+                >
+                <button 
+                    type="submit" 
+                    class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-medium p-3 rounded-2xl shadow-md transition flex items-center justify-center shrink-0"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                    </svg>
+                </button>
+            </form>
+        </footer>
+
+        <!-- مودال حساب کاربری و خروج -->
+        <div id="user-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-4">
+                <div class="flex items-center justify-between border-b pb-3">
+                    <h3 class="font-bold text-slate-800 text-base">حساب کاربری متصل</h3>
+                    <button id="close-user-modal-btn" class="text-slate-400 hover:text-slate-600 p-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-3 py-2">
+                    <div id="modal-user-avatar" class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-lg overflow-hidden shrink-0">
+                        U
+                    </div>
+                    <div class="truncate">
+                        <p id="modal-user-name" class="font-bold text-slate-800 text-sm truncate">کاربر گوگل</p>
+                        <p id="modal-user-email" class="text-xs text-slate-400 truncate">user@gmail.com</p>
+                    </div>
+                </div>
+
+                <div class="text-xs text-slate-500 bg-slate-50 p-3 rounded-2xl leading-relaxed">
+                    کارهای شما به‌صورت ابری به این حساب جیمیل متصل است. در هر دستگاه دیگری (گوشی یا سیستم دیگر) با همین جیمیل وارد شوید، کارها به‌طور خودکار همگام خواهند شد.
+                </div>
+
+                <div class="pt-2">
+                    <button id="signout-btn" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 font-medium py-2.5 rounded-xl transition text-xs border border-rose-200">
+                        خروج از این حساب
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- پیام توست -->
+        <div id="toast-msg" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs py-2 px-4 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 z-50"></div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfwjUJw52_Jz_15PBfAfW422VRL9-DL24",
+            authDomain: "todo-1f659.firebaseapp.com",
+            projectId: "todo-1f659",
+            storageBucket: "todo-1f659.firebasestorage.app",
+            messagingSenderId: "228355662827",
+            appId: "1:228355662827:web:ced5fff4a94413c757afae",
+            measurementId: "G-DL12LJR1K5"
+        };
+
+        const LOCAL_STORAGE_KEY = 'MY_SYNC_TODO_DATA';
+
+        let todos = [];
+        let currentFilter = 'all';
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+        let cloudUnsubscribe = null;
+        let isSyncingFromCloud = false;
+
+        // المان‌های UI
+        const todoList = document.getElementById('todo-list');
+        const emptyState = document.getElementById('empty-state');
+        const addForm = document.getElementById('add-form');
+        const taskInput = document.getElementById('task-input');
+        const filterButtons = document.querySelectorAll('.filter-tab');
+        const toastMsg = document.getElementById('toast-msg');
+        const syncStatusDot = document.getElementById('sync-status-dot');
+        const syncStatusText = document.getElementById('sync-status-text');
+        const authActionBtn = document.getElementById('auth-action-btn');
+        const authBtnLabel = document.getElementById('auth-btn-label');
+        const loginBanner = document.getElementById('login-banner');
+        const bannerLoginBtn = document.getElementById('banner-login-btn');
+        const userModal = document.getElementById('user-modal');
+        const closeUserModalBtn = document.getElementById('close-user-modal-btn');
+        const signoutBtn = document.getElementById('signout-btn');
+        const modalUserName = document.getElementById('modal-user-name');
+        const modalUserEmail = document.getElementById('modal-user-email');
+        const modalUserAvatar = document.getElementById('modal-user-avatar');
+        const exportBtn = document.getElementById('export-btn');
+
+        function showNotification(text) {
+            toastMsg.textContent = text;
+            toastMsg.classList.remove('opacity-0');
+            toastMsg.classList.add('opacity-100');
+            setTimeout(() => {
+                toastMsg.classList.remove('opacity-100');
+                toastMsg.classList.add('opacity-0');
+            }, 2500);
+        }
+
+        function loadLocalData() {
+            const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (raw) {
+                try {
+                    todos = JSON.parse(raw);
+                } catch (e) {
+                    todos = [];
+                }
+            } else {
+                todos = [
+                    { id: '1', title: 'خوش آمدید! برای سینک بین دستگاه‌ها با گوگل وارد شوید', done: false, date: 'امروز' }
+                ];
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
+            }
+            renderUI();
+        }
+
+        function saveLocalData() {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
+            if (!isSyncingFromCloud && currentUser) {
+                syncToCloud();
+            }
+        }
+
+        async function syncToCloud() {
+            if (!db || !currentUser) return;
+            try {
+                // ذخیره در مسیر اختصاصی بر اساس شناسه کاربری جیمیل
+                const userDocRef = doc(db, 'users', currentUser.uid);
+                await setDoc(userDocRef, {
+                    items: todos,
+                    email: currentUser.email || '',
+                    name: currentUser.displayName || '',
+                    lastUpdated: Date.now()
+                });
+            } catch (err) {
+                console.error("خطا در ارسال به ابر:", err);
+                syncStatusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+                syncStatusText.textContent = "خطا در اتصال به دیتابیس";
+            }
+        }
+
+        function setupRealtimeSync(user) {
+            if (!db || !user) return;
+
+            syncStatusDot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
+            syncStatusText.textContent = "در حال دریافت کارها...";
+
+            if (cloudUnsubscribe) cloudUnsubscribe();
+            const docRef = doc(db, 'users', user.uid);
+
+            cloudUnsubscribe = onSnapshot(docRef, (docSnap) => {
+                syncStatusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                syncStatusText.textContent = `سینک ابری فعال (${user.displayName || user.email.split('@')[0]})`;
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data && Array.isArray(data.items)) {
+                        isSyncingFromCloud = true;
+                        todos = data.items;
+                        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
+                        renderUI();
+                        isSyncingFromCloud = false;
+                    }
+                } else {
+                    // اگر اولین بار است که کاربر با این ایمیل وارد می‌شود، دیتای اولیه را ثبت کن
+                    syncToCloud();
+                }
+            }, (error) => {
+                console.error("خطای سینک:", error);
+                syncStatusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+                syncStatusText.textContent = "نیاز به بررسی دسترسی دیتابیس";
+            });
+        }
+
+        // راه‌اندازی فایربیس و شنونده احراز هویت
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    authBtnLabel.textContent = user.displayName ? user.displayName.split(' ')[0] : 'پروفایل';
+                    loginBanner.classList.add('hidden');
+
+                    if (user.photoURL) {
+                        modalUserAvatar.innerHTML = `<img src="${user.photoURL}" class="w-full h-full object-cover">`;
+                    } else {
+                        modalUserAvatar.textContent = (user.displayName || user.email || 'U')[0].toUpperCase();
+                    }
+                    modalUserName.textContent = user.displayName || 'کاربر گرامی';
+                    modalUserEmail.textContent = user.email || '';
+
+                    setupRealtimeSync(user);
+                } else {
+                    currentUser = null;
+                    if (cloudUnsubscribe) cloudUnsubscribe();
+                    authBtnLabel.textContent = "ورود با گوگل";
+                    syncStatusDot.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
+                    syncStatusText.textContent = "آفلاین (جهت سینک وارد شوید)";
+                    loginBanner.classList.remove('hidden');
+                }
+            });
+        } catch (e) {
+            console.error("خطا در راه‌اندازی فایربیس:", e);
+        }
+
+        async function handleGoogleLogin() {
+            if (!auth) {
+                showNotification('فایربیس هنوز متصل نشده است');
+                return;
+            }
+            const provider = new GoogleAuthProvider();
+            try {
+                showNotification('در حال باز کردن پنجره گوگل...');
+                await signInWithPopup(auth, provider);
+                showNotification('با موفقیت وارد شدید!');
+            } catch (err) {
+                console.error("خطای ورود با گوگل:", err);
+                if (err.code === 'auth/popup-blocked') {
+                    showNotification('مرورگر باز شدن پاپ‌آپ گوگل را مسدود کرد!');
+                } else if (err.code === 'auth/operation-not-allowed') {
+                    showNotification('ورود با گوگل در فایربیس فعال نشده است');
+                } else {
+                    showNotification('خطا در ورود با گوگل');
+                }
+            }
+        }
+
+        async function handleSignOut() {
+            if (!auth) return;
+            try {
+                await signOut(auth);
+                userModal.classList.add('hidden');
+                showNotification('از حساب خارج شدید');
+            } catch (err) {
+                console.error("خطا در خروج:", err);
+            }
+        }
+
+        authActionBtn.onclick = () => {
+            if (currentUser) {
+                userModal.classList.remove('hidden');
+            } else {
+                handleGoogleLogin();
+            }
+        };
+
+        bannerLoginBtn.onclick = handleGoogleLogin;
+        closeUserModalBtn.onclick = () => userModal.classList.add('hidden');
+        signoutBtn.onclick = handleSignOut;
+
+        function renderUI() {
+            todoList.innerHTML = '';
+            const filtered = todos.filter(t => {
+                if (currentFilter === 'active') return !t.done;
+                if (currentFilter === 'completed') return t.done;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl transition select-none ${item.done ? 'bg-slate-100/60 opacity-60' : 'hover:border-slate-300'}`;
+
+                const left = document.createElement('div');
+                left.className = 'flex items-center gap-3 flex-1 min-w-0 cursor-pointer';
+                left.onclick = () => {
+                    item.done = !item.done;
+                    saveLocalData();
+                    renderUI();
+                };
+
+                const check = document.createElement('div');
+                check.className = `w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border transition ${
+                    item.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-400 bg-white'
+                }`;
+                if (item.done) {
+                    check.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
+                }
+
+                const info = document.createElement('div');
+                info.className = 'truncate';
+                const text = document.createElement('p');
+                text.className = `text-sm font-medium leading-relaxed truncate ${item.done ? 'task-done text-slate-400' : 'text-slate-800'}`;
+                text.textContent = item.title;
+
+                const time = document.createElement('span');
+                time.className = 'text-[11px] text-slate-400 block';
+                time.textContent = item.date;
+
+                info.appendChild(text);
+                info.appendChild(time);
+                left.appendChild(check);
+                left.appendChild(info);
+
+                const del = document.createElement('button');
+                del.className = 'text-slate-400 hover:text-rose-500 p-2 rounded-xl transition hover:bg-rose-50 active:scale-95 shrink-0 mr-1';
+                del.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>';
+                del.onclick = (e) => {
+                    e.stopPropagation();
+                    todos = todos.filter(t => t.id !== item.id);
+                    saveLocalData();
+                    renderUI();
+                    showNotification('کار حذف شد');
+                };
+
+                card.appendChild(left);
+                card.appendChild(del);
+                todoList.appendChild(card);
+            });
+        }
+
+        addForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const val = taskInput.value.trim();
+            if (!val) return;
+
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+            todos.unshift({
+                id: Date.now().toString(),
+                title: val,
+                done: false,
+                date: `امروز ${timeStr}`
+            });
+
+            taskInput.value = '';
+            saveLocalData();
+            renderUI();
+            showNotification('کار اضافه شد');
+        });
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => {
+                    b.classList.remove('bg-white', 'text-indigo-700', 'shadow-sm');
+                    b.classList.add('text-indigo-200');
+                });
+                btn.classList.add('bg-white', 'text-indigo-700', 'shadow-sm');
+                btn.classList.remove('text-indigo-200');
+                currentFilter = btn.dataset.filter;
+                renderUI();
+            });
+        });
+
+        exportBtn.onclick = () => {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(todos, null, 2));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", `tasks_${new Date().toISOString().slice(0, 10)}.json`);
+            dl.click();
+        };
+
+        // بارگذاری دیتای آفلاین محلی در ابتدای اجرا
+        loadLocalData();
+    </script>
+</body>
+</html>
