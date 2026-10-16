@@ -259,6 +259,81 @@
             </div>
         </div>
 
+        <!-- مودال مدیریت جامع برچسب‌ها -->
+        <div id="tags-manager-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+            <div class="bg-white rounded-3xl p-4 sm:p-5 w-full max-w-md shadow-2xl flex flex-col max-h-[85vh] space-y-3.5">
+                <div class="flex items-center justify-between border-b pb-2.5">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">🏷️</span>
+                        <h3 class="font-bold text-slate-800 text-sm">مدیریت جامع برچسب‌ها</h3>
+                    </div>
+                    <button id="close-tags-manager-btn" class="text-slate-400 hover:text-slate-600 p-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <!-- فرم افزودن برچسب جدید در مودال -->
+                <form id="manager-add-tag-form" class="space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                    <div class="flex items-center gap-2">
+                        <input 
+                            type="text" 
+                            id="manager-new-tag-name" 
+                            placeholder="نام برچسب جدید..." 
+                            class="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            required
+                        >
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-sm">
+                            افزودن
+                        </button>
+                    </div>
+                    <label class="flex items-center gap-2 text-[11px] text-slate-600 cursor-pointer pt-0.5">
+                        <input type="checkbox" id="manager-new-tag-req-time" class="rounded text-indigo-600 focus:ring-0">
+                        <span>این برچسب نیاز به تخمین زمان و تاریخ دارد (مانند کارهای شرکت)</span>
+                    </label>
+                </form>
+
+                <!-- لیست برچسب‌های موجود -->
+                <div class="flex-1 overflow-y-auto no-scrollbar space-y-1.5 pr-0.5" id="tags-manager-list">
+                    <!-- به صورت داینامیک پر می‌شود -->
+                </div>
+            </div>
+        </div>
+
+        <!-- مودال ویرایش یا تغییر نام برچسب انتخابی -->
+        <div id="manage-project-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-3xl p-5 w-full max-w-xs shadow-2xl space-y-3.5">
+                <div class="flex items-center justify-between border-b pb-2.5">
+                    <h3 class="font-bold text-slate-800 text-sm">ویرایش برچسب</h3>
+                    <button id="close-manage-modal-btn" class="text-slate-400 hover:text-slate-600 p-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <form id="rename-project-form" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">نام برچسب:</label>
+                        <input 
+                            type="text" 
+                            id="edit-project-name-input" 
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            required
+                        >
+                    </div>
+                    <label class="flex items-center gap-2 text-[11px] text-slate-600 cursor-pointer">
+                        <input type="checkbox" id="edit-project-requires-time-input" class="rounded text-indigo-600 focus:ring-0">
+                        <span>نیاز به تخمین زمان و تاریخ</span>
+                    </label>
+                    <div class="flex items-center gap-2 pt-1">
+                        <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold py-2 rounded-xl transition text-xs shadow-md">
+                            ذخیره تغییرات
+                        </button>
+                        <button type="button" id="delete-project-btn" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold py-2 px-3 rounded-xl transition text-xs active:scale-95">
+                            حذف برچسب
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- مودال گزارش و دیاگرام‌های تحلیلی -->
         <div id="reports-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
             <div class="bg-white rounded-3xl p-4 sm:p-5 w-full max-w-lg shadow-2xl flex flex-col max-h-[92vh]">
@@ -939,6 +1014,7 @@
 
         // رندر لیست داخل مودال جامع مدیریت برچسب‌ها
         function renderTagsManagerList() {
+            if (!tagsManagerList) return;
             tagsManagerList.innerHTML = '';
             if (projects.length === 0) {
                 tagsManagerList.innerHTML = '<div class="text-center py-8 text-xs text-slate-400">هنوز برچسبی تعریف نکرده‌اید. با فرم بالا یکی بسازید!</div>';
@@ -963,133 +1039,150 @@
                     </div>
                 `;
 
-                row.querySelector('.edit-tag-btn').onclick = () => {
-                    openManageProjectModal(p);
-                };
+                const editBtn = row.querySelector('.edit-tag-btn');
+                if (editBtn) {
+                    editBtn.onclick = () => {
+                        openManageProjectModal(p);
+                    };
+                }
 
                 tagsManagerList.appendChild(row);
             });
         }
 
         // باز و بسته کردن مودال مدیریت جامع
-        openTagsManagerBtn.onclick = () => {
-            renderTagsManagerList();
-            tagsManagerModal.classList.remove('hidden');
-            managerNewTagName.focus();
-        };
+        if (openTagsManagerBtn) {
+            openTagsManagerBtn.onclick = () => {
+                renderTagsManagerList();
+                if (tagsManagerModal) tagsManagerModal.classList.remove('hidden');
+                if (managerNewTagName) managerNewTagName.focus();
+            };
+        }
 
-        closeTagsManagerBtn.onclick = () => {
-            tagsManagerModal.classList.add('hidden');
-        };
+        if (closeTagsManagerBtn) {
+            closeTagsManagerBtn.onclick = () => {
+                if (tagsManagerModal) tagsManagerModal.classList.add('hidden');
+            };
+        }
 
-        managerAddTagForm.onsubmit = (e) => {
-            e.preventDefault();
-            const pName = managerNewTagName.value.trim();
-            const reqTime = managerNewTagReqTime.checked;
-            if (!pName) return;
+        if (managerAddTagForm) {
+            managerAddTagForm.onsubmit = (e) => {
+                e.preventDefault();
+                if (!managerNewTagName) return;
+                const pName = managerNewTagName.value.trim();
+                const reqTime = managerNewTagReqTime ? managerNewTagReqTime.checked : false;
+                if (!pName) return;
 
-            if (projects.some(p => p.name === pName) || pName === ALL_PROJECTS_TAB) {
-                showNotification('این برچسب قبلاً ایجاد شده است');
-                return;
-            }
+                if (projects.some(p => p.name === pName) || pName === ALL_PROJECTS_TAB) {
+                    showNotification('این برچسب قبلاً ایجاد شده است');
+                    return;
+                }
 
-            projects.push({ name: pName, requiresTime: reqTime });
-            selectedTagsForNewTask.add(pName);
-            managerNewTagName.value = '';
-            managerNewTagReqTime.checked = false;
+                projects.push({ name: pName, requiresTime: reqTime });
+                selectedTagsForNewTask.add(pName);
+                managerNewTagName.value = '';
+                if (managerNewTagReqTime) managerNewTagReqTime.checked = false;
 
-            saveLocalData();
-            renderProjectsBar();
-            renderTaskTagsSelector();
-            renderTagsManagerList();
-            renderUI();
-            showNotification(`برچسب «${pName}» با موفقیت افزوده شد`);
-        };
+                saveLocalData();
+                renderProjectsBar();
+                renderTaskTagsSelector();
+                renderTagsManagerList();
+                renderUI();
+                showNotification(`برچسب «${pName}» با موفقیت افزوده شد`);
+            };
+        }
 
         function openManageProjectModal(projectObj) {
             selectedProjectForManage = projectObj;
-            editProjectNameInput.value = projectObj.name;
-            editProjectRequiresTimeInput.checked = !!projectObj.requiresTime;
-            manageProjectModal.classList.remove('hidden');
-            editProjectNameInput.focus();
+            if (editProjectNameInput) editProjectNameInput.value = projectObj.name;
+            if (editProjectRequiresTimeInput) editProjectRequiresTimeInput.checked = !!projectObj.requiresTime;
+            if (manageProjectModal) manageProjectModal.classList.remove('hidden');
+            if (editProjectNameInput) editProjectNameInput.focus();
         }
 
-        closeManageModalBtn.onclick = () => {
-            manageProjectModal.classList.add('hidden');
-            selectedProjectForManage = null;
-        };
+        if (closeManageModalBtn) {
+            closeManageModalBtn.onclick = () => {
+                if (manageProjectModal) manageProjectModal.classList.add('hidden');
+                selectedProjectForManage = null;
+            };
+        }
 
-        renameProjectForm.onsubmit = (e) => {
-            e.preventDefault();
-            const newName = editProjectNameInput.value.trim();
-            const newRequiresTime = editProjectRequiresTimeInput.checked;
-            if (!newName || !selectedProjectForManage) return;
+        if (renameProjectForm) {
+            renameProjectForm.onsubmit = (e) => {
+                e.preventDefault();
+                if (!editProjectNameInput) return;
+                const newName = editProjectNameInput.value.trim();
+                const newRequiresTime = editProjectRequiresTimeInput ? editProjectRequiresTimeInput.checked : false;
+                if (!newName || !selectedProjectForManage) return;
 
-            const oldName = selectedProjectForManage.name;
-            if (newName !== oldName && projects.some(p => p.name === newName)) {
-                showNotification('این نام برچسب قبلاً ثبت شده است');
-                return;
-            }
-
-            projects = projects.map(p => {
-                if (p.name === oldName) {
-                    return { name: newName, requiresTime: newRequiresTime };
+                const oldName = selectedProjectForManage.name;
+                if (newName !== oldName && projects.some(p => p.name === newName)) {
+                    showNotification('این نام برچسب قبلاً ثبت شده است');
+                    return;
                 }
-                return p;
-            });
 
-            todos = todos.map(t => {
-                if (Array.isArray(t.projects) && t.projects.includes(oldName)) {
-                    const updated = t.projects.map(tag => tag === oldName ? newName : tag);
-                    return { ...t, projects: updated };
+                projects = projects.map(p => {
+                    if (p.name === oldName) {
+                        return { name: newName, requiresTime: newRequiresTime };
+                    }
+                    return p;
+                });
+
+                todos = todos.map(t => {
+                    if (Array.isArray(t.projects) && t.projects.includes(oldName)) {
+                        const updated = t.projects.map(tag => tag === oldName ? newName : tag);
+                        return { ...t, projects: updated };
+                    }
+                    return t;
+                });
+
+                if (selectedTagsForNewTask.has(oldName)) {
+                    selectedTagsForNewTask.delete(oldName);
+                    selectedTagsForNewTask.add(newName);
                 }
-                return t;
-            });
 
-            if (selectedTagsForNewTask.has(oldName)) {
-                selectedTagsForNewTask.delete(oldName);
-                selectedTagsForNewTask.add(newName);
-            }
-
-            if (currentProjectFilter === oldName) {
-                currentProjectFilter = newName;
-            }
-
-            saveLocalData();
-            renderProjectsBar();
-            renderTaskTagsSelector();
-            renderTagsManagerList();
-            renderUI();
-            manageProjectModal.classList.add('hidden');
-            showNotification(`برچسب «${newName}» به‌روزرسانی شد`);
-        };
-
-        deleteProjectBtn.onclick = () => {
-            if (!selectedProjectForManage) return;
-            const projectToDelete = selectedProjectForManage.name;
-
-            projects = projects.filter(p => p.name !== projectToDelete);
-            selectedTagsForNewTask.delete(projectToDelete);
-
-            todos = todos.map(t => {
-                if (Array.isArray(t.projects)) {
-                    return { ...t, projects: t.projects.filter(tag => tag !== projectToDelete) };
+                if (currentProjectFilter === oldName) {
+                    currentProjectFilter = newName;
                 }
-                return t;
-            });
 
-            if (currentProjectFilter === projectToDelete) {
-                currentProjectFilter = ALL_PROJECTS_TAB;
-            }
+                saveLocalData();
+                renderProjectsBar();
+                renderTaskTagsSelector();
+                renderTagsManagerList();
+                renderUI();
+                if (manageProjectModal) manageProjectModal.classList.add('hidden');
+                showNotification(`برچسب «${newName}» به‌روزرسانی شد`);
+            };
+        }
 
-            saveLocalData();
-            renderProjectsBar();
-            renderTaskTagsSelector();
-            renderTagsManagerList();
-            renderUI();
-            manageProjectModal.classList.add('hidden');
-            showNotification(`برچسب «${projectToDelete}» حذف شد`);
-        };
+        if (deleteProjectBtn) {
+            deleteProjectBtn.onclick = () => {
+                if (!selectedProjectForManage) return;
+                const projectToDelete = selectedProjectForManage.name;
+
+                projects = projects.filter(p => p.name !== projectToDelete);
+                selectedTagsForNewTask.delete(projectToDelete);
+
+                todos = todos.map(t => {
+                    if (Array.isArray(t.projects)) {
+                        return { ...t, projects: t.projects.filter(tag => tag !== projectToDelete) };
+                    }
+                    return t;
+                });
+
+                if (currentProjectFilter === projectToDelete) {
+                    currentProjectFilter = ALL_PROJECTS_TAB;
+                }
+
+                saveLocalData();
+                renderProjectsBar();
+                renderTaskTagsSelector();
+                renderTagsManagerList();
+                renderUI();
+                if (manageProjectModal) manageProjectModal.classList.add('hidden');
+                showNotification(`برچسب «${projectToDelete}» حذف شد`);
+            };
+        }
 
         function openActualTimeModal(item) {
             selectedTaskForActualTime = item;
